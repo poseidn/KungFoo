@@ -1,0 +1,125 @@
+# to compile with clang, use: 
+# cmake ../src/ -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DCMAKE_C_COMPILER=/usr/bin/clang
+# to do a scan-build static analysis run
+# cmake -DCMAKE_CXX_COMPILER=c++-analyzer  -DCMAKE_C_COMPILER=ccc-analyzer ../src/
+# scan-build make
+#
+# or custom build
+# cmake -DCMAKE_CXX_COMPILER=/home/poseidon/dev/llvm-clang/build/Release+Asserts/bin/clang++  
+# -DCMAKE_C_COMPILER=/home/poseidon/dev/llvm-clang/build/Release+Asserts/bin/clang ../src/
+
+set (COMMON_COMPILE_FLAGS "")
+
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang") 
+	# Descent compile configuratin
+	set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -DUSE_THREADING_NULL=1 -DDESCENT_LOG_ENABLED=1 -DUSE_SDL=1")
+	# common gcc settings
+	set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -Werror -Wfatal-errors -Wall -Wno-deprecated-declarations -Wno-strict-aliasing -Wno-int-to-pointer-cast -Wno-unused-private-field -Wno-reorder -Wno-unused-variable -Wno-overloaded-virtual -std=c++11 -pedantic")
+endif()
+
+# add some gcc specific options
+if (CMAKE_COMPILER_IS_GNUCXX) 
+	set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -Wno-maybe-uninitialized")
+endif()
+
+# clang 3.4 specific
+# will have LTO with clang 
+#set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -emit-llvm -S" )
+
+# enable profiling in the build
+set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -DDESCENT_PROFILE=1 -DDESCENT_SIGNAL_PROFILE=1" )
+
+
+if(WIN32)
+	# will use the static runtime for all compiled files
+	if ( MSVC )
+		# configure Descent compile
+		set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} /DUSE_THREADING_NULL=1 /DDESCENT_LOG_ENABLED=1 /DUSE_SDL=1")
+		# MSVC specific
+		set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} /EHsc")
+	endif ()
+
+	set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} /DDESCENT_WIN_COMPILE=1")
+
+	set ( WIN_LIBRARY_ROOT "c:\\dev\\" )
+	# boost
+	# only-using boost header-only functionality
+	include_directories (  ${Descent_SOURCE_DIR}\\..\\DescentEngine\\external\\boost\\ )
+	
+	# bullet
+	include_directories (  ${WIN_LIBRARY_ROOT}bullet-2.80-rev2531-src\\src )
+	link_directories (  ${WIN_LIBRARY_ROOT}bullet-2.80-rev2531-src\\lib )
+	
+	# SDL
+	include_directories (  ${Descent_SOURCE_DIR}\\..\\DescentEngine\\external\\SDL-1.2\\include )
+	link_directories (  ${Descent_SOURCE_DIR}\\..\\DescentEngine\\external\\SDL-1.2\\VisualC\\Release )
+	
+	# SDL image
+	include_directories (  ${Descent_SOURCE_DIR}\\..\\DescentEngine\\external\\SDL_image-1.2\\ )
+	link_directories (  ${Descent_SOURCE_DIR}\\..\\DescentEngine\\external\\SDL_image-1.2\\VisualC\\Release )
+
+	# SDL mixer
+	include_directories (  ${Descent_SOURCE_DIR}\\..\\DescentEngine\\external\\SDL_mixer-1.2\\ )
+	link_directories (  ${Descent_SOURCE_DIR}\\..\\DescentEngine\\external\\SDL_mixer-1.2\\VisualC\\Release )
+	
+	# static is neede for the mingw build to prevent loading different (conflicting) 
+	# versions of the c/c++ runtime library
+	#set (GENERAL_COMPILE_FLAGS " ${COMMON_COMPILE_FLAGS} -DUSE_THREADING_NULL=1 -static")
+	set (GENERAL_COMPILE_FLAGS " ${COMMON_COMPILE_FLAGS}")
+	
+	set(CMAKE_CXX_FLAGS "${GENERAL_COMPILE_FLAGS}" )
+endif()
+
+if(UNIX)
+	# automatic reloading of Lua scripts 
+	#set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -DDESCENT_FILE_WATCH=1" ) 
+
+	#set (GENERAL_COMPILE_FLAGS "-DUSE_THREADING_CPP11=1")
+	set (GENERAL_COMPILE_FLAGS "-Werror -Wall -std=c++11 -pedantic")
+	
+	
+	# enable this, if you want to include google perf tools in the compile to sample 
+	# a runtime profile
+	#set (COMPILE_WITH_PROFILER 1 )
+
+	set (COMMON_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -DDESCENT_UNIX_COMPILE=1")
+
+	if ( COMPILE_WITH_PROFILER )
+		set (GENERAL_COMPILE_FLAGS " ${GENERAL_COMPILE_FLAGS} -DUSE_PROFILER=1" )
+	endif ()
+
+
+	# disable unused var warning because this makes commenting out code fragments very annoying
+	#set (DESCENT_COMPILE_FLAGS "-DUSE_SDL_OPENGL=1")
+	#  -Wno-unused-but-set-variable  does not work with clang ..
+	set (GENERAL_COMPILE_FLAGS " ${GENERAL_COMPILE_FLAGS} ${COMMON_COMPILE_FLAGS}")
+
+	## go for it, big time
+    #set(CMAKE_CXX_FLAGS "-g -O2 -march=native -Werror --param vect-max-version-for-alias-checks=30 -ftree-vectorizer-verbose=0 -pthread ${GENERAL_COMPILE_FLAGS}")
+
+    # for gcov use: -fprofile-arcs -ftestcoverage
+    # mega highly optimized: use with gcc 4.7 and link libs statically ( due to LTO )
+    #set(CMAKE_CXX_FLAGS "-Ofast --param vect-max-version-for-alias-checks=50  -flto -flto-report -pthread  ${GENERAL_COMPILE_FLAGS}")
+
+	## for fast debug compiles
+    set(CMAKE_CXX_FLAGS "-O3 -g -ggdb ${GENERAL_COMPILE_FLAGS}" )
+
+	# LTO:  does work with -g, produces wrong results
+	# when using -fuse-linker-plugin, GIMPLE from .a files are used during the LTO process by the linker
+	# http://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+	# using 3 threads to compile
+	## STATUS: compiles, but not fully due to some problems with defined symbols
+	##         might be solved by fixing the general symbol messS
+	#set(CMAKE_CXX_FLAGS "-Ofast -flto=3 -flto-report -fuse-linker-plugin ${GENERAL_COMPILE_FLAGS}")
+
+    #set(CMAKE_CXX_COMPILER "/home/poseidon/dev/llvm/build/Release+Asserts/bin/clang++" )
+    #set(CMAKE_CXX_COMPILER "llvm-g++")
+    
+    ## gcc 4.7 needed to have initializer lists 
+    #if ( EXISTS "/home/poseidon/dev/gcc-4.7.1-bin/bin/g++" )
+   	#set(CMAKE_CXX_COMPILER "g++-4.7.1")
+    #endif()
+    
+    # oh yeah, baby
+    #set(CMAKE_CXX_COMPILER clang++)
+endif()

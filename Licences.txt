@@ -1,0 +1,51 @@
+-- Licences of the content included in this repository --
+
+Source code:
+
+The licence of the various source code segments is documented 
+in the header of the source files themself.
+
+
+Sounds:
+
+player_kick1.ogg: 
+	> http://www.freesound.org/people/nextmaking/sounds/86018/
+	> Sampling+ , user "nextmaking"
+    > CC Sampling+ : http://creativecommons.org/licenses/sampling+/1.0/
+
+
+player_yell*.ogg:
+	> http://www.freesound.org/people/oldedgar/sounds/97977/
+	> oldedgar
+	> CC 0 : http://creativecommons.org/publicdomain/zero/1.0/
+	
+dead_siren.ogg
+    http://soundbible.com/1937-Tornado-Siren-II.html
+    > CC attribute : http://creativecommons.org/licenses/by/3.0/
+    	
+player_jump1.ogg
+    http://www.freesound.org/people/melack/sounds/9192/
+    > CC attribute : http://creativecommons.org/licenses/by/3.0/
+
+Imaages:
+
+xbox controller:
+	http://commons.wikimedia.org/wiki/File:Xbox-360-arcade.jpg
+	> public domain
+	
+
+Textures:
+
+from http://www.cgtextures.com/ and in accordance with their
+terms of usage:
+
+http://www.textures.com/terms_of_use.html
+
+All other media (images, 3d models, sounds, music and other) 
+not quoted here is original work and released under the
+Creative Commons Attribution 4.0 International licence:
+
+http://creativecommons.org/licenses/by/4.0/
+
+
+

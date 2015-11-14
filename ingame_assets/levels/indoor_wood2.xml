@@ -1,0 +1,34 @@
+<!--  two doors on each side with no wall in the middle -->
+<LevelFragment connectIn="a,b" connectOut="a,b" size="16,14">
+    <Tile repeat="8,7"  center="0,0" entity="floor_wood2" 
+        type="FloorEntity" collides="0"/>
+    
+    <Tile repeat="1,25"  center="-1.0,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+
+    <Tile repeat="1,25"  center="15,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+    
+    
+    <Tile repeat="2,1"  center="0.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/>
+    <Tile repeat="2,1"  center="10.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/>
+    <!-- Tile repeat="1,1"  center="8.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/-->
+    
+    <!-- Tile repeat="1,1"  center="3,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/-->
+    <Tile repeat="1,1"  center="13.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/>
+    
+    <Tile  center="4,6" entity="carpet1" 
+        type="FloorEntity" collides="0"/>
+    
+    <!-- Tile  center="14,6" entity="carpet1" 
+        type="FloorEntity" collides="0"/-->
+            
+    <Tile  center="9,12.0" entity="vase1" 
+       type="WallEntity" collides="1"/>
+    
+</LevelFragment>

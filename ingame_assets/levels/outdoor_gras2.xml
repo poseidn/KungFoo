@@ -1,0 +1,19 @@
+<!-- this one goes from an outdoor area back into indoor area -->
+<LevelFragment connectIn="c,d" connectOut="b"  size="16,14">
+    <Tile repeat="14,7"  center="-5,0" entity="floor_gras1" 
+        type="FloorEntity" collides="0"/>
+    
+    <Tile repeat="4,1"  center="-5.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/>
+
+    <Tile repeat="4,1"  center="10.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/>
+
+    <!-- not visible but prevents the player from leaving the map -->
+    <Tile repeat="1,26"  center="-5,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+
+    <Tile repeat="1,26"  center="19,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+    
+</LevelFragment>

@@ -1,0 +1,8 @@
+
+include_directories( ${Descent_SOURCE_DIR}/../DescentEngine/external/tinyxml2 ) 
+include_directories( ${Descent_SOURCE_DIR}/../DescentEngine/external/lua ) 
+include_directories( ${Descent_SOURCE_DIR}/../DescentEngine/external/luabind ) 
+include_directories( ${Descent_SOURCE_DIR}/../DescentEngine/external/inotify-cxx ) 
+include_directories( ${Descent_SOURCE_DIR}/../DescentEngine/external ) 
+include_directories( ${Descent_SOURCE_DIR}/../DescentEngine/external/bullet )
+ 

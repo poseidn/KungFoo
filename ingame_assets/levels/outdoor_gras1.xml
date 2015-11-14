@@ -1,0 +1,23 @@
+<!-- this is gras to gras or gras to water - bridge -->]
+<LevelFragment connectIn="b" connectOut="c,d,e"  size="16,14">
+    <Tile repeat="14,6"  center="-5,2" entity="floor_gras1" 
+        type="FloorEntity" collides="0"/>
+    <Tile repeat="2,1"  center="6,0" entity="floor_gras1" 
+        type="FloorEntity" collides="0"/>
+
+    <!-- not visible but prevents the player from leaving the map -->
+    <Tile repeat="1,26"  center="-5,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+
+    <Tile repeat="1,26"  center="19,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+    
+    <Tile repeat="2,1"  center="-5.5,0" entity="wall_wood_top1" 
+        type="WallEntity" collides="1"/>
+
+    <Tile repeat="2,1"  center="16.5,0" entity="wall_wood_top1" 
+        type="WallEntity" collides="1"/>
+
+
+</LevelFragment>
+

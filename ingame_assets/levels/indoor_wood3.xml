@@ -1,0 +1,42 @@
+<!-- double doors in the middle, no wall in the middle -->]
+<LevelFragment connectIn="a,b" connectOut="b"  size="16,14">
+    <Tile repeat="8,7"  center="0,0" entity="floor_wood2" 
+        type="FloorEntity" collides="0"/>
+    
+    <Tile repeat="1,25"  center="-1,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+
+    <Tile repeat="1,25"  center="15,2" entity="wall_wood_side1" 
+        type="WallEntity" collides="1"/>
+    
+    
+    <Tile repeat="2,1"  center="0.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/>
+
+    <Tile repeat="2,1"  center="10.5,14" entity="wall_wood_front1" 
+        type="WallEntity" collides="1"/>
+    
+    <Tile center="2,13" entity="cabinet1" 
+        type="FloorEntity" collides="1"  collidesInJump="0"/>
+
+    <Tile  center="12,13" entity="cabinet1" 
+        type="FloorEntity" collides="1" collidesInJump="0"/>
+    
+    <Tile  center="8,5.7" entity="cabinet1" 
+       type="FloorEntity" collides="1" collidesInJump="0"/>
+    <Tile  center="10,5.7" entity="cabinet1" 
+       type="FloorEntity" collides="1" collidesInJump="0"/>
+    
+    <Tile  center="6,5" entity="cabinet1" 
+       type="FloorEntity" collides="1" collidesInJump="0"/>
+    <Tile  center="10,5" entity="cabinet1" 
+       type="FloorEntity" collides="1" collidesInJump="0"/>
+
+    <Tile  center="-0.2,2.2" entity="vase1" 
+       type="FloorEntity" collides="1"/>
+
+    <Tile  center="-0.2,11.3" entity="vase1" 
+       type="WallEntity" collides="1"/>
+    
+    
+</LevelFragment>

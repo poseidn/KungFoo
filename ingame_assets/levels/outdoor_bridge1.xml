@@ -1,0 +1,25 @@
+<!-- double doors in the middle -->]
+<LevelFragment connectIn="c,d" connectOut="c,d"  size="16,14">
+
+    <Tile repeat="2,7"  center="6,0" entity="floor_wood2" 
+        type="FloorEntity" collides="0"/>
+
+    <!-- water, cannot be walked on -->
+    <Tile repeat="5,7"  center="10,0" entity="floor_water1" 
+        type="WallEntity" collides="1"/>
+    <Tile repeat="5,7"  center="-4,0" entity="floor_water1" 
+        type="FloorEntity" collides="1"/>
+
+    <!-- lower water boundaries -->
+    <Tile repeat="4,1"  center="-5.5,-1" entity="wall_wood_top2" 
+        type="FloorEntity" collides="1"/>
+    <Tile repeat="4,1"  center="10.5,-1" entity="wall_wood_top2" 
+        type="FloorEntity" collides="1"/>
+
+    <!-- upper water boundaries -->
+    <Tile repeat="4,1"  center="-5.5,13" entity="wall_wood_top2" 
+        type="FloorEntity" collides="1"/>
+    <Tile repeat="4,1"  center="10.5,13" entity="wall_wood_top2" 
+        type="FloorEntity" collides="1"/>
+    
+</LevelFragment>

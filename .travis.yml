@@ -1,0 +1,64 @@
+language: android
+
+# using container-based build infrastructure
+sudo: false
+
+android:
+  components:
+    # get the names by running
+    # android list sdk --no-ui --all --extendd
+    # Uncomment the lines below if you want to
+    # use the latest revision of Android SDK Tools
+    # - platform-tools
+    # - tools
+
+    # The BuildTools version used by your project
+    - build-tools-22.0.1
+
+    # The SDK version used to compile your project
+    - android-16
+
+    # Additional components
+    - extra-google-google_play_services
+    - extra-google-m2repository
+    - extra-android-m2repository
+    
+    - addon-google_apis-google-16
+    
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - cmake
+    - libboost-all-dev
+    - g++-5
+    - libsdl1.2-dev
+    - libsdl-mixer1.2-dev
+    - libsdl-image1.2-dev
+
+before_script:
+  - export CXX="g++-5"
+  - type android
+  - wget http://dl.google.com/android/ndk/android-ndk-r10e-linux-x86_64.bin
+  - chmod +x android-ndk-r10e-linux-x86_64.bin
+  - ./android-ndk-r10e-linux-x86_64.bin &> /dev/null
+  - export ANDROID_NDK=`pwd`/android-ndk-r10e/
+  - export PATH=$PATH:$ANDROID_NDK
+
+script:
+  # build android
+  - ./distributeAssets.sh &> /dev/null
+  - cd build_android/
+  - ./get_externals.sh
+  - android update project --name "Kung Foo Barracuda" --path .
+  - ndk-build
+  - ant release
+  # build Linux x86_64
+  - cd ..
+  - mkdir _build
+  - cd _build  
+  - cmake ../src
+  - make -j4
+  - DescentTest/DescentTest
+
