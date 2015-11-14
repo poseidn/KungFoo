@@ -27,6 +27,7 @@ cd DescentGame
 cd build_android/
 ./get_externals.sh
 android update project --path  .
+ndk-build -j4
 ant release
 ```
 
