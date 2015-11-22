@@ -303,8 +303,8 @@ struct DescentFrameworkBase: boost::noncopyable {
 		 svDpad.setIngame( m_re.getScreenTransform(), Vector2(4.0f, 4.0f), false );
 		 m_re.addSpriteVisual(svDpad);*/
 		// get the music going
-		auto music1 = m_resources.loadMusic("musik1");
-		m_snd.playMusic(music1);
+		//auto music1 = m_resources.loadMusic("musik1");
+		//m_snd.playMusic(music1);
 
 		m_isInitialized = true;
 	}
