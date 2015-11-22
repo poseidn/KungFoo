@@ -3,6 +3,10 @@ language: android
 # using container-based build infrastructure
 sudo: false
 
+notifications:
+  email:
+    on_failure: [always|never|change] # default: always
+    
 android:
   components:
     # get the names by running
