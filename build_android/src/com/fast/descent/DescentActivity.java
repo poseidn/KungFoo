@@ -78,7 +78,7 @@ public class DescentActivity extends Activity {
 	private SoundBackend m_soundBackend = new SoundBackend();
 	private FileBackend m_fileBackend;
 
-	private ShutdownBroadcastReceiver m_shutdownReceiver;
+	//private ShutdownBroadcastReceiver m_shutdownReceiver;
 
 	/*
 	 * @Override public void onConfigurationChanged(
@@ -103,8 +103,10 @@ public class DescentActivity extends Activity {
 
 		// register receiver is case this app is shut down
 
-		m_shutdownReceiver = new ShutdownBroadcastReceiver(m_soundBackend);
-		/*this.registerReceiver(m_shutdownReceiver, new IntentFilter(
+		
+		/*
+		 * m_shutdownReceiver = new ShutdownBroadcastReceiver(m_soundBackend);
+		 * this.registerReceiver(m_shutdownReceiver, new IntentFilter(
 				OuyaIntent.ACTION_MENUAPPEARING));
 		*/
 
@@ -366,7 +368,7 @@ public class DescentActivity extends Activity {
 	protected void onStop() {
 		JavaLog.info(TAG, "onStop called");
 		// disabled for debugging
-		unregisterReceiver(m_shutdownReceiver);
+		//unregisterReceiver(m_shutdownReceiver);
 		super.onStop();
 	}
 }
