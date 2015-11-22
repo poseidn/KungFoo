@@ -12,18 +12,19 @@ public:
 	}
 
 	// todo: don't load the same image twice, but return a ref to the actually loaded
-	virtual TexturePtr loadImage(std::string const& imageName, unsigned int frames = 1) CPP11_OVERRIDE;
+	TexturePtr loadImage(std::string const& imageName, unsigned int frames = 1)
+			CPP11_OVERRIDE;
 
-	virtual SoundPtr loadSound(std::string const& soundName) CPP11_OVERRIDE;
-	virtual MusicPtr loadMusic(std::string const& musicName) CPP11_OVERRIDE;
+	SoundPtr loadSound(std::string const& soundName) CPP11_OVERRIDE;
+	MusicPtr loadMusic(std::string const& musicName) CPP11_OVERRIDE;
 
-	virtual std::string loadLevel(std::string const& levelName) CPP11_OVERRIDE;
-	virtual std::string loadScript(std::string const& scriptName) CPP11_OVERRIDE;
+	std::string loadLevel(std::string const& levelName) CPP11_OVERRIDE;
 
-	virtual std::string getScriptPath(std::string const & scriptName) CPP11_OVERRIDE;
+	std::string getScriptPath(std::string const & scriptName) CPP11_OVERRIDE;
 
 	// just put an already loaded texture into the texture cache
-	virtual void preloadImage(std::string const& imageName, GLuint glId, size_t frameCount = 1) CPP11_OVERRIDE;
+	void preloadImage(std::string const& imageName, GLuint glId,
+			size_t frameCount = 1) CPP11_OVERRIDE;
 
 protected:
 	void freeTexture(TexturePtr) CPP11_OVERRIDE;

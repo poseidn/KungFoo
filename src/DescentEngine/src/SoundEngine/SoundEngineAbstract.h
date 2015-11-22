@@ -33,6 +33,12 @@ public:
 		m_mute = m;
 	}
 
+	virtual void pauseSound() {
+	}
+
+	virtual void resumeSound() {
+	}
+
 	virtual ~SoundEngineAbstract() {
 	}
 private:

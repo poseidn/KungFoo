@@ -23,9 +23,10 @@ public class SoundBackend {
 	static String TAG = "SoundBackend";
 	static int MaxMixerChannels = 8;
 
-	public SoundBackend() {
+	public SoundBackend(Context ctx) {
 		m_soundPool = new SoundPool(MaxMixerChannels,
 				AudioManager.STREAM_MUSIC, 0);
+		m_context = ctx;
 	}
 
 	class Music {
@@ -65,16 +66,19 @@ public class SoundBackend {
 		private int m_id;
 	}
 
-	public void preloadSound(Context ctx, String name) throws ResourceNotFound {
+	// preloading of sound samples, can be used for large samples,
+	// which would otherwise interrupte the game fps because loading takes
+	// too long
+	public void preloadSound(String name) throws ResourceNotFound {
 		if (!m_samples.containsKey(name)) {
 
-			int ident = ctx.getResources().getIdentifier(name, "raw",
-					ctx.getPackageName());
+			int ident = m_context.getResources().getIdentifier(name, "raw",
+					m_context.getPackageName());
 			if (ident == 0) {
 				throw new ResourceNotFound("sound " + name);
 			}
 
-			int sndId = m_soundPool.load(ctx, ident, 1);
+			int sndId = m_soundPool.load(m_context, ident, 1);
 			Sample sp = new Sample(sndId);
 
 			m_samples.put(name, sp);
@@ -84,11 +88,14 @@ public class SoundBackend {
 		}
 	}
 
-	public void preloadMusic(Context ctx, String name) throws ResourceNotFound {
+	// preloading of music samples, can be used for large samples,
+	// which would otherwise interrupte the game fps because loading takes
+	// too long
+	public void preloadMusic(String name) throws ResourceNotFound {
 		if (!m_music.containsKey(name)) {
 
-			int ident = ctx.getResources().getIdentifier(name, "raw",
-					ctx.getPackageName());
+			int ident = m_context.getResources().getIdentifier(name, "raw",
+					m_context.getPackageName());
 			if (ident == 0) {
 				JavaLog.fatal(TAG, "Music with name " + name
 						+ " cannot be preloaded");
@@ -96,7 +103,7 @@ public class SoundBackend {
 			}
 
 			Music sp = new Music();
-			MediaPlayer mediaPlayer = MediaPlayer.create(ctx, ident);
+			MediaPlayer mediaPlayer = MediaPlayer.create(m_context, ident);
 			sp.addMedialPlayer(mediaPlayer);
 
 			m_music.put(name, sp);
@@ -104,7 +111,8 @@ public class SoundBackend {
 		}
 	}
 
-	public int playMusic(String name) {
+	public int playMusic(String name) throws ResourceNotFound {
+		preloadSound(name);
 		if (!m_music.containsKey(name)) {
 			JavaLog.fatal(TAG, "Music with name " + name + " not found");
 		} else {
@@ -117,7 +125,8 @@ public class SoundBackend {
 		return 0;
 	}
 
-	public int playSound(String name, float direction) {
+	public int playSound(String name, float direction) throws ResourceNotFound {
+		preloadSound(name);
 		if (!m_samples.containsKey(name)) {
 			JavaLog.fatal(TAG, "Sound with name " + name + " not found");
 			return 0;
@@ -190,5 +199,7 @@ public class SoundBackend {
 
 	private MusicMap m_music = new MusicMap();
 	private SampleMap m_samples = new SampleMap();
-	private SoundPool m_soundPool;
+	private SoundPool m_soundPool = null;
+	private Context m_context = null;
+	
 }

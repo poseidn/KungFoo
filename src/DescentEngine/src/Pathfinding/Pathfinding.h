@@ -16,7 +16,7 @@
 #include "NodeList.h"
 
 // Astar wayfinding algorithm within a node graph
-class AStar: boost::noncopyable {
+class AStar {
 public:
 
 	// reset the internal state of this astar algo
@@ -44,6 +44,4 @@ private:
 };
 
 // use the Astar as default pathfinding
-class Pathfinding CPP11_FINAL : public AStar {
-};
-
+using Pathfinding = AStar;

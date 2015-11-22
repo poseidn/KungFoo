@@ -73,20 +73,25 @@ public:
 
 typedef Vector3Base<float> Vector3;
 
-class Vector2Uint: public VectorX<size_t>, public VectorY<size_t> {
+template <typename TData>
+class Vector2Base: public VectorX<TData>, public VectorY<TData> {
 public:
 	CPP11_CONSTEXPR_OPTIONAL
-	Vector2Uint() :
-			VectorX<size_t>(0), VectorY<size_t>(0) {
+	Vector2Base() :
+			VectorX<TData>(0), VectorY<TData>(0) {
 
 	}
 
 	CPP11_CONSTEXPR_OPTIONAL
-	Vector2Uint(size_t x, size_t y) :
-			VectorX<size_t>(x), VectorY<size_t>(y) {
+	Vector2Base(TData x, TData y) :
+			VectorX<TData>(x), VectorY<TData>(y) {
 
 	}
 };
+
+typedef Vector2Base<size_t> Vector2UInt;
+
+typedef Vector2Base<int> Vector2Int;
 
 class Vector2: public VectorX<float>, public VectorY<float> {
 public:

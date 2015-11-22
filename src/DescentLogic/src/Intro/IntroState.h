@@ -21,7 +21,7 @@ public:
 	};
 
 	IntroState(Engines & eg) :
-			StateBase(), m_engines(eg), m_stage(0) {
+			StateBase(), m_engines(eg) {
 
 	}
 
@@ -63,6 +63,8 @@ public:
 
 private:
 	Engines & m_engines;
-	size_t m_stage;
+	// skip the first stage with the company logo and move
+	// directly to the Kung Foo intro
+	size_t m_stage = 1;
 
 };

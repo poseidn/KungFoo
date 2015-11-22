@@ -9,6 +9,7 @@
 
 #include "SDLInput.h"
 
+// todo: refactor this SLDInput to be fixed here
 class InputSystem CPP11_FINAL : public MultiplexedInput<SDLInput, DelayedInput>
 {
 public:
@@ -22,32 +23,7 @@ public:
 
 #include "AndroidInput.h"
 
-class InputSystem CPP11_FINAL : public MultiplexedInput<AndroidInput, DelayedInput>
-{
-public:
-	InputSystem ( AndroidInput * iA, DelayedInput * iB ): MultiplexedInput ( iA, iB), m_androidInput ( iA ) {}
+class InputSystem CPP11_FINAL : public AndroidInput {
 
-	void injectDirectionStickOne( InputSystemBase::ContainerId id, Vector2 newMovement)
-	{
-		InputContainer & cont = getContainerByContainerId( id );
-
-		m_androidInput->injectDirectionStickOne ( cont, newMovement );
-	}
-
-	void injectKeyDown(InputSystemBase::ContainerId id, int keyId)
-	{
-		InputContainer & cont = getContainerByContainerId( id );
-
-		m_androidInput->injectKeyDown( cont, id, keyId );
-	}
-
-	void registerInputDevice( InputSystemBase::ContainerId id )
-	{
-		m_androidInput->registerInputDevice( id );
-	}
-
-private:
-	AndroidInput * m_androidInput;
 };
-
 #endif

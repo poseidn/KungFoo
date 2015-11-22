@@ -9,11 +9,13 @@
 #include "../../Entities/GameTemplates.h"
 
 void NavigateMenuAspect::init(MenuState & gs) {
-	gs.slotInputSelect.subscribe([=] ( MenuState & g, InputSystem::ContainerId id )
-	{	this->onSelect( g, id);});
+	gs.slotInputSelect.subscribe(
+			[=] ( MenuState & g, InputSystem::ContainerId id )
+			{	this->onSelect( g, id);});
 
-	gs.slotInputEnable.subscribe([=] ( MenuState & g, InputSystem::ContainerId id )
-	{	this->onEnableDisableDevice( g, id);});
+	gs.slotInputEnable.subscribe(
+			[=] ( MenuState & g, InputSystem::ContainerId id )
+			{	this->onEnableDisableDevice( g, id);});
 
 	gs.slotInputMove.subscribe(
 			[=] ( MenuState & g, MenuState::MovementDirection dir, InputSystem::ContainerId id )
@@ -29,6 +31,7 @@ void NavigateMenuAspect::init(MenuState & gs) {
 				GameTemplates::preload(gs.getEngines().entityEngine(), gs.getEngines().resourceEngine(), m_lastPreload);
 
 				if ( m_lastPreload.loadDone()) {
+					logging::Info() << "Preloading of resources complete";
 
 					// TODO: the user may select this
 					// reset this, once the player restarts a game etc.
@@ -60,11 +63,14 @@ void NavigateMenuAspect::init(MenuState & gs) {
 					gs.getEngines().renderEngine().render();
 					m_preloading = false;
 					gs.requestStateChange("game", changeInfo);
+				} else {
+					logging::Info() << "Preloading not done, yet";
 				}
 			});
 }
 
-void NavigateMenuAspect::onEnableDisableDevice(MenuState & gs, InputSystem::ContainerId id) {
+void NavigateMenuAspect::onEnableDisableDevice(MenuState & gs,
+		InputSystem::ContainerId id) {
 	const size_t numEnabled = gs.activeDevices();
 	logging::Info() << " Enabling/Disabling device " << id;
 
@@ -80,7 +86,8 @@ void NavigateMenuAspect::onEnableDisableDevice(MenuState & gs, InputSystem::Cont
 
 			// cannot enable much more playes
 			if ((numEnabled >= GameRules::MaxPlayers) && !it.m_isEnabled) {
-				logging::Info() << "Maximum number of players reached, no new device";
+				logging::Info()
+						<< "Maximum number of players reached, no new device";
 				break;
 			}
 
@@ -102,6 +109,7 @@ void NavigateMenuAspect::onSelect(MenuState & gs, InputSystem::ContainerId id) {
 
 	if (currentSel == "") {
 		// no item was selected, don't need to handle this !
+		logging::Info() << "No Menu item selected";
 		return;
 	}
 
@@ -142,31 +150,34 @@ void NavigateMenuAspect::onSelect(MenuState & gs, InputSystem::ContainerId id) {
 
 }
 
-void NavigateMenuAspect::onMove(MenuState & gs, MenuState::MovementDirection dir,
-		InputSystem::ContainerId id) {
+void NavigateMenuAspect::onMove(MenuState & gs,
+		MenuState::MovementDirection dir, InputSystem::ContainerId id) {
 
 	autoSelectDevice(gs, id);
-	logging::Info() << "Moving menu item";
 	gs.moveMenuPointer(dir);
 }
 
-void NavigateMenuAspect::autoSelectDevice(MenuState & gs, InputSystem::ContainerId id) {
+void NavigateMenuAspect::autoSelectDevice(MenuState & gs,
+		InputSystem::ContainerId id) {
 
 	// check if no device has been selected yet and select this one...
 	const size_t numEnabled = gs.activeDevices();
 
-	logging::Info() << "checking Autoselection for device " << id << " devices enabled: " << numEnabled;
-
 	if (numEnabled == 0) {
 		for (auto & it : gs.getDeviceItems()) {
-			logging::Info() << "Checking container id " << it.m_ContainerId << " ...";
+			logging::Info() << "Checking container id " << it.m_ContainerId
+					<< " ...";
 			if (it.m_ContainerId == id) {
 				it.m_isEnabled = true;
 				gs.updateDevices();
-				logging::Info() << "Autoselectiong device " << it.m_ContainerId << " for gaming";
+				logging::Info() << "Autoselectiong device " << it.m_ContainerId
+						<< " for gaming";
 				break;
 			}
 		}
+	} else {
+		logging::Info() << "Already enabled " << numEnabled
+				<< " devices, not autoselect of device";
 	}
 }
 

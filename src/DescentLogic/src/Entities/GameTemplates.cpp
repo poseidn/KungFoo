@@ -206,8 +206,6 @@ void GameTemplates::registerTemplates(EntityEngine & entNg) {
 	registerUiElement("tooth1", { 0.3f, 0.3f });
 
 	// various overlay stuff
-	registerStatic("intro_bg", { 20.0, 20.0 }, { 20.0, 20.0 }, LayerPriorityBottomMinusOne,
-			CollisionMode::NeverCollide);
 	registerUiElement("bullet", { 1.2f, 1.2f });
 	registerUiElement("game_logo", { 8.0f, 4.0f });
 

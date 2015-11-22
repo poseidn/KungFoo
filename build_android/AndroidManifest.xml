@@ -29,16 +29,19 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/android_icon"
-        android:label="@string/descent_activity" >
+        android:label="@string/descent_activity"
+        android:hasCode="true">
 
         <!-- android:screenOrientation="landscape" -->
-        <activity
-            android:name="DescentActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:launchMode="singleTask"
-            android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
 
+        <activity android:name="DescentNativeActivity"
+                  android:label="DescentNativeActivity"
+                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+                  android:configChanges="orientation|keyboardHidden"
+                  android:screenOrientation="landscape">
+            <!-- Tell NativeActivity the name of or .so -->
+            <meta-data android:name="android.app.lib_name"
+                       android:value="FastDescentNativeActivity" />
             <!--
             default android intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -54,5 +57,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

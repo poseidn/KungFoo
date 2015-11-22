@@ -12,7 +12,7 @@
 class InputDevice {
 public:
 	enum class TypeEnum {
-		Keyboard, Gamepad
+		Keyboard, Gamepad, Touchpad
 	};
 
 	InputDevice(TypeEnum type, int index, std::string name) :
@@ -49,6 +49,9 @@ public:
 	typedef std::map<ContainerId, InputContainer> ContainerArray;
 	typedef std::map<PlayerInputId, ContainerId> PlayerAssignment;
 
+	// per-frame call which allows the concrete input system
+	// to query the current state of its input devices and update
+	// the input containers accordingly
 	virtual void updateContainer(float deltaT) = 0;
 
 	InputContainer const& getContainerConst(PlayerInputId pl) {

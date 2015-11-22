@@ -11,5 +11,10 @@ public:
 	 EGLContext m_context;
 	 int32_t m_width;
 	 int32_t m_height;*/
+	EGLSurface surface;
+	EGLContext context;
 
+	EGLDisplay display;
+	int width;
+	int height;
 };

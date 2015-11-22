@@ -98,10 +98,10 @@ public:
 		InputSystem::ContainerId m_ContainerId;
 		InputDevice::TypeEnum m_type;
 
-		Entity * m_Icon;
-		Entity * m_IconPassive;
-		Entity * m_EnableText;
-		Entity * m_DisableText;
+		Entity * m_Icon = nullptr;
+		Entity * m_IconPassive = nullptr;
+		Entity * m_EnableText = nullptr;
+		Entity * m_DisableText = nullptr;
 	};
 
 	typedef std::vector<DeviceItem> DeviceItems;

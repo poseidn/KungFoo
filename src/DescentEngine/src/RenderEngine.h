@@ -91,6 +91,11 @@ public:
 		m_spriteVisuals.remove(visual);
 	}
 
+    void release() {
+    	m_glInterface.release(m_glState);
+    	m_isInitialized = false;
+    }
+
 	void render(float deltaT = 0.0f) {
 		if (m_isInitialized == false)
 			return;
@@ -250,8 +255,6 @@ class RenderEngine CPP11_FINAL : public RenderEngineAbstract<AndroidOpenGLESInte
 
 // use no typedef to allow for forward declaration of this class
 class RenderEngine CPP11_FINAL : public RenderEngineAbstract<SDLOpenGLInterface, OpenGL_ES_Render,
-SDLOpenGL_State> {
-
-};
+SDLOpenGL_State> {};
 #endif
 

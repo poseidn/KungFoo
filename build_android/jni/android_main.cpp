@@ -17,6 +17,9 @@
 // OpenGL ES 2.0 code
 #include <jni.h>
 #include <android/log.h>
+#include <android_native_app_glue.h>
+#include <android/native_window_jni.h>
+//#include <JNIHelper.h>
 
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
@@ -24,6 +27,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include <atomic>
+#include <chrono>
+namespace chr = std::chrono;
 
 //#include <DescentEngine/src/JavaInterface.h>
 
@@ -41,115 +48,221 @@
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-AndroidFramework g_descentFW;
+struct user_data {
+	user_data() {
+		is_ready = false;
+		has_focus = false;
+		after_resume = false;
+	}
 
-extern "C" {
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_initEngines(
-		JNIEnv * env, jobject obj, jint width, jint height);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_initGame(JNIEnv * env,
-		jobject obj);
-JNIEXPORT jboolean JNICALL Java_com_fast_descent_DescentLib_isInitialized(JNIEnv * env,
-		jobject obj);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_androidOnResume(JNIEnv * env,
-		jobject obj);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_step(JNIEnv * env,
-		jobject obj, jfloat deltaT);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_registerTexture(
-		JNIEnv * env, jobject obj, jstring name, jint glId, jint frameCount);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_injectDirectionStickOne(
-		JNIEnv * env, jobject obj, jint id, jfloat x, jfloat y);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_injectKeyDown(
-		JNIEnv * env, jobject obj, jint id, jint keyId);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_registerInputDevice(
-		JNIEnv * env, jobject obj, jint devId);
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_setVirtualControls(
-		JNIEnv * env, jobject obj );
-JNIEXPORT jfloat JNICALL Java_com_fast_descent_DescentLib_getTileSizeX(
-		JNIEnv * env, jobject obj);
-JNIEXPORT jfloat JNICALL Java_com_fast_descent_DescentLib_getTileSizeY(
-		JNIEnv * env, jobject obj);
+	std::unique_ptr<AndroidFramework> framework;
+	std::atomic<bool> is_ready;
+	std::atomic<bool> has_focus;
+	std::atomic<bool> after_resume;
+
+};
+
+static int32_t engine_handle_input(struct android_app* app,
+		AInputEvent* event) {
+	//struct engine* engine = (struct engine*)app->userData;
+	auto udata = (user_data*) app->userData;
+
+	auto etype = AInputEvent_getType(event);
+	if (etype == AINPUT_EVENT_TYPE_MOTION) {
+		int32_t atype = AMotionEvent_getAction(event);
+		uint32_t action = atype & AMOTION_EVENT_ACTION_MASK;
+		int32_t finger_index = (atype & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK)
+				>> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+		int32_t finger_id = AMotionEvent_getPointerId(event, finger_index);
+
+		float x = AMotionEvent_getX(event, finger_index);
+		float y = AMotionEvent_getY(event, finger_index);
+
+		/*LOGI(
+				"got motion event with (%f,%f) and id %i and index %i raw action %i",
+				x, y, finger_id, finger_index, action);*/
+
+		// we accpet both the primary or secondary pointer
+		if ((action == AMOTION_EVENT_ACTION_DOWN)
+				|| (action == AMOTION_EVENT_ACTION_POINTER_DOWN)) {
+			//LOGI("AMOTION_EVENT_ACTION_DOWN");
+			udata->framework->getInputSystem()->injectTouchDown(finger_id, x,
+					y);
+		} else if (action == AMOTION_EVENT_ACTION_MOVE) {
+			//LOGI("AMOTION_EVENT_ACTION_MOVE");
+			udata->framework->getInputSystem()->injectTouchMove(finger_id, x,
+					y);
+		} else if ((action == AMOTION_EVENT_ACTION_UP)
+				|| (action == AMOTION_EVENT_ACTION_POINTER_UP)) {
+			//LOGI("AMOTION_EVENT_ACTION_UP");
+			udata->framework->getInputSystem()->injectTouchUp(finger_id);
+		} else {
+			//LOGI("AMOTION_EVENT_ not handled");
+		}
+
+		return 1;
+	}
+	return 0;
 }
 
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_initEngines(
-		JNIEnv * env, jobject obj, jint width, jint height) {
-	LOGI("setupGraphics(%d, %d)", width, height);
-	AndroidInitData initData(Vector2(width, height));
-	LOGI("initializing render engine");
-	g_descentFW.setJavaInterface(env, obj);
-	g_descentFW.initRenderEngine(initData);
+static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
+	// todo: extract custom engine data ....
+	auto udata = (user_data*) app->userData;
+
+	switch (cmd) {
+	case APP_CMD_START:
+		LOGI("APP_CMD_START");
+
+		// create game framework
+		udata->framework.reset(new AndroidFramework());
+		// allows framework internal classes to perform calls into the Activities
+		// java code
+		udata->framework->setJavaInterface(app->activity);
+
+		// transfer some important services
+		udata->framework->setAssetManager(app->activity->assetManager);
+
+		// inializes framework components
+		udata->framework->execute();
+
+		break;
+	case APP_CMD_INIT_WINDOW: {
+		LOGI("APP_CMD_INIT_WINDOW");
+
+		// maybe made optional, if some gamepads are registered with android
+		udata->framework->setVirtualControls();
+
+		// setup OpenGL ES and start loading graphics
+		AndroidInitData initData(app);
+		udata->framework->initRenderEngine(initData);
+		udata->is_ready.store(true);
+	}
+		break;
+
+	case APP_CMD_PAUSE:
+		LOGI("APP_CMD_PAUSE");
+		udata->after_resume.store(false);
+		break;
+	case APP_CMD_RESUME:
+		LOGI("APP_CMD_RESUME");
+		udata->after_resume.store(true);
+		break;
+
+	case APP_CMD_GAINED_FOCUS:
+		LOGI("APP_CMD_GAINED_FOCUS");
+		udata->has_focus.store(true);
+		udata->framework->resumeGame();
+		break;
+
+	case APP_CMD_LOST_FOCUS:
+		LOGI("APP_CMD_LOST_FOCUS");
+		udata->has_focus.store(false);
+		udata->framework->pauseGame();
+		break;
+
+	case APP_CMD_TERM_WINDOW:
+		LOGI("APP_CMD_TERM_WINDOW");
+
+		udata->is_ready.store(false);
+
+		// free all Open GL resources, once this has the called,
+		// the surface cannot be re-used
+		udata->framework->freeAllTextures();
+		udata->framework->releaseRenderEngine();
+
+		break;
+	case APP_CMD_STOP:
+		LOGI("APP_CMD_STOP");
+
+		udata->is_ready.store(false);
+
+		// destroy all game state
+		// game will start from scratch next time
+		udata->framework.release();
+
+		break;
+	case APP_CMD_DESTROY:
+		// free all loaded game resources
+		LOGI("APP_CMD_DESTROY");
+		break;
+	}
 }
 
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_initGame(JNIEnv * env,
-		jobject obj) {
-	g_descentFW.setJavaInterface(env, obj);
-	g_descentFW.executeBase();
+void android_main(android_app* and_app) {
+	app_dummy();
+
+	user_data udata;
+
+	/*
+	 g_engine.SetState( state );
+
+	 //Init helper functions
+	 ndk_helper::JNIHelper::Init( state->activity, HELPER_CLASS_NAME );
+	 */
+	// todo: will be our engine data later on
+	and_app->userData = &udata;
+	and_app->onAppCmd = engine_handle_cmd;
+	and_app->onInputEvent = engine_handle_input;
+
+#ifdef USE_NDK_PROFILER
+	monstartup("libTeapotNativeActivity.so");
+#endif
+
+	LOGI("android_main started");
+	// loop waiting for stuff to do.
+
+	chr::high_resolution_clock::time_point lastStart;
+	while (1) {
+		std::chrono::milliseconds msecs = chr::duration_cast
+				< std::chrono::milliseconds
+				> (chr::high_resolution_clock::now() - lastStart);
+		auto delta_seconds = msecs.count() * 0.001f;
+		lastStart = chr::high_resolution_clock::now();
+
+		if (delta_seconds > 10.0f) {
+			// too big, treat as very short
+			delta_seconds = 0.000001f;
+		}
+
+		// Read all pending events.
+		int id;
+		int events;
+		android_poll_source* source;
+
+		bool engineReady = udata.is_ready.load();
+		const bool is_interactive = udata.has_focus.load()
+				&& udata.after_resume.load();
+		//LOGI( "%i", engineReady && is_interactive);
+
+		const bool is_animating = engineReady && is_interactive;
+
+		//and_app->isRenderEngineReady;
+
+		// If not animating, we will block forever waiting for events.
+		// If animating, we loop until all events are read, then continue
+		// to draw the next frame of animation.
+		while ((id = ALooper_pollAll(
+				(udata.has_focus.load() && udata.after_resume.load()
+						&& udata.is_ready.load()) ? 0 : -1, NULL, &events,
+				(void**) &source)) >= 0) {
+			// Process this event.
+			if (source != NULL)
+				source->process(and_app, source);
+
+			//g_engine.ProcessSensors( id );
+
+			// Check if we are exiting.
+			if (and_app->destroyRequested != 0) {
+				//g_engine.TermDisplay();
+				return;
+			}
+		}
+
+		if (engineReady && is_interactive) {
+			// Drawing is throttled to the screen update rate, so there
+			// is no need to do timing here.
+			// todo: correct time step
+			udata.framework->step(delta_seconds);
+		}
+	}
 }
-
-JNIEXPORT jboolean JNICALL Java_com_fast_descent_DescentLib_isInitialized(JNIEnv * env,
-		jobject obj) {
-	g_descentFW.setJavaInterface(env, obj);
-	return g_descentFW.isInitialized();
-}
-
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_androidOnResume(JNIEnv * env,
-		jobject obj) {
-	g_descentFW.setJavaInterface(env, obj);
-	return g_descentFW.androidOnResume() ;
-}
-
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_step(JNIEnv * env,
-		jobject obj, jfloat deltaT) {
-	g_descentFW.setJavaInterface(env, obj);
-	g_descentFW.step(deltaT);
-}
-
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_registerTexture(
-		JNIEnv * env, jobject obj, jstring name, jint glId, jint frameCount) {
-	LOGI("Registering Texture");
-	g_descentFW.setJavaInterface(env, obj);
-	const char *nativeString = env->GetStringUTFChars(name, NULL);
-	std::string cppName(nativeString);
-	g_descentFW.getResourceEngine().preloadImage(cppName, (GLuint) glId,
-			(int) frameCount);
-
-	env->ReleaseStringUTFChars(name, nativeString);
-	LOGI("... done");
-
-}
-
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_injectDirectionStickOne(
-		JNIEnv * env, jobject obj, jint id, jfloat x, jfloat y) {
-	g_descentFW.setJavaInterface(env, obj);
-	g_descentFW.getInputSystem().injectDirectionStickOne(id, Vector2(x, y));
-}
-
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_injectKeyDown(
-		JNIEnv * env, jobject obj, jint id, jint keyId) {
-	g_descentFW.setJavaInterface(env, obj);
-	g_descentFW.getInputSystem().injectKeyDown(id, keyId);
-}
-
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_registerInputDevice(
-		JNIEnv * env, jobject obj, jint devId) {
-	g_descentFW.setJavaInterface(env, obj);
-	g_descentFW.getInputSystem().registerInputDevice(devId);
-}
-
-JNIEXPORT void JNICALL Java_com_fast_descent_DescentLib_setVirtualControls(
-		JNIEnv * env, jobject obj ) {
-	g_descentFW.setJavaInterface(env, obj);
-	g_descentFW.setVirtualControls();
-}
-
-JNIEXPORT jfloat JNICALL Java_com_fast_descent_DescentLib_getTileSizeX(
-		JNIEnv * env, jobject obj) {
-	g_descentFW.setJavaInterface(env, obj);
-	return g_descentFW.getRenderEngine().getScreenTransform().getTileSize().x();
-}
-
-JNIEXPORT jfloat JNICALL Java_com_fast_descent_DescentLib_getTileSizeY(
-		JNIEnv * env, jobject obj) {
-	g_descentFW.setJavaInterface(env, obj);
-	return g_descentFW.getRenderEngine().getScreenTransform().getTileSize().y();
-}
-

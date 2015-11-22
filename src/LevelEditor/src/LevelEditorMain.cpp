@@ -15,7 +15,7 @@ int main(int argc, const char* argv[]) {
 			);
 	f.m_levelName = levelName;
 
-	SDLInterfaceInitData sdlInitData(Vector2Uint(800, 600), false);
+	SDLInterfaceInitData sdlInitData(Vector2UInt(800, 600), false);
 	f.initRenderEngine(sdlInitData);
 
 	f.execute();

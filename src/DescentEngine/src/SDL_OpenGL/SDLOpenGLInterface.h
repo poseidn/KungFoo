@@ -17,11 +17,11 @@ public:
 	SDLInterfaceInitData() : Fullscreen(false) {
 	}
 
-	SDLInterfaceInitData(Vector2Uint reso, bool fscreen = false) :
+	SDLInterfaceInitData(Vector2UInt reso, bool fscreen = false) :
 			Resolution(reso), Fullscreen(fscreen) {
 	}
 
-	util::ValidValue<Vector2Uint> Resolution;
+	util::ValidValue<Vector2UInt> Resolution;
 
 	bool Fullscreen;
 };
@@ -33,7 +33,7 @@ public:
 
 	void init(SDLInterfaceInitData const& data, SDLOpenGL_State & state);
 
-	void Release();
+	void release(SDLOpenGL_State & state);
 
 	ScreenTransform const& getScreenTransform() const {
 		return m_transform;

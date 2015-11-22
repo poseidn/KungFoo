@@ -6,7 +6,8 @@
 #include "../Log.h"
 #include "../Common_OpenGL/GLSupport.h"
 
-void SDLOpenGLInterface::init(SDLInterfaceInitData const& data, SDLOpenGL_State & state) {
+void SDLOpenGLInterface::init(SDLInterfaceInitData const& data,
+		SDLOpenGL_State & state) {
 	logging::Info() << "Initializing SDL based OpenGL";
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -55,8 +56,8 @@ void SDLOpenGLInterface::init(SDLInterfaceInitData const& data, SDLOpenGL_State 
 		SDL_ShowCursor(0);
 	}
 
-	logging::Info() << "Setting video mode <" << width << ":" << height << ">, Fullscreen = "
-			<< data.Fullscreen;
+	logging::Info() << "Setting video mode <" << width << ":" << height
+			<< ">, Fullscreen = " << data.Fullscreen;
 
 	if (SDL_SetVideoMode(width, height, bpp, flags) == 0) {
 
@@ -98,6 +99,7 @@ void SDLOpenGLInterface::init(SDLInterfaceInitData const& data, SDLOpenGL_State 
 	m_transform = GLSupport::computeScreenTransform(width, height);
 }
 
-void SDLOpenGLInterface::Release() {
-
+void SDLOpenGLInterface::release(SDLOpenGL_State & state) {
+	// todo
 }
+

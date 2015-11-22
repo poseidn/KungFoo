@@ -49,6 +49,9 @@ LOCAL_MODULE := DescentEngine
 LOCAL_C_INCLUDES := $(ADD_INCLUDES)
 LOCAL_CPPFLAGS := $(DESCENT_CPP_FLAGS)
 LOCAL_CPP_FEATURES := rtti exceptions
+# so we can use the android_app struct also here 
+LOCAL_STATIC_LIBRARIES := android_native_app_glue
+
 
 LOCAL_SRC_FILES := $(DESCENT_ENGINE_EXTERNAL_PATH)/tinyxml2/tinyxml2.cpp \
 					$(DESCENT_ENGINE_EXTERNAL_PATH)/Box2D/Common/b2BlockAllocator.cpp \
@@ -115,7 +118,6 @@ LOCAL_SRC_FILES := $(DESCENT_ENGINE_EXTERNAL_PATH)/tinyxml2/tinyxml2.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/EntityEngine/EntityTemplate.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/EntityEngine/Entity.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/EntityEngine/MultiVisualEntity.cpp \
-					$(DESCENT_ENGINE_SRC_PATH)/AnimationEngine/EntityAnimation.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/Input/AndroidInput.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/Input/InputContainer.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/ResourceEngine/ResourceEngine.cpp \
@@ -123,6 +125,7 @@ LOCAL_SRC_FILES := $(DESCENT_ENGINE_EXTERNAL_PATH)/tinyxml2/tinyxml2.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/AnimationEngine/AnimationEngine.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/AnimationEngine/ParticleAnimation.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/AnimationEngine/TextAnimation.cpp \
+					$(DESCENT_ENGINE_SRC_PATH)/AnimationEngine/EntityAnimation.cpp \
 					$(DESCENT_ENGINE_SRC_PATH)/Performance/SectionTimer.cpp
 
 include $(BUILD_STATIC_LIBRARY)
@@ -134,16 +137,10 @@ LOCAL_MODULE := DescentLogic
 LOCAL_C_INCLUDES := $(ADD_INCLUDES)
 LOCAL_CPPFLAGS := $(DESCENT_CPP_FLAGS)
 LOCAL_CPP_FEATURES := rtti exceptions
+# so we can use the android_app struct also here 
+LOCAL_STATIC_LIBRARIES := android_native_app_glue DescentEngine
 
-# no freakin idea why the Pathfinding.cpp must be compiled here, but otherwise
-# there will be e linker error on android
-LOCAL_SRC_FILES := $(DESCENT_ENGINE_EXTERNAL_PATH)/tinyxml2/tinyxml2.cpp \
-					$(DESCENT_ENGINE_SRC_PATH)/Pathfinding/Pathfinding.cpp \
-					$(DESCENT_ENGINE_SRC_PATH)/EntityEngine/Entity.cpp \
-					$(DESCENT_ENGINE_SRC_PATH)/EntityEngine/EntityTemplate.cpp \
-					$(DESCENT_ENGINE_SRC_PATH)/CinematicEngine/CinematicEngine.cpp \
-					$(DESCENT_ENGINE_SRC_PATH)/AnimationEngine/EntityAnimation.cpp \
-					$(DESCENT_LOGIC_SRC_PATH)/Game/GameState.cpp \
+LOCAL_SRC_FILES := 	$(DESCENT_LOGIC_SRC_PATH)/Game/GameState.cpp \
 					$(DESCENT_LOGIC_SRC_PATH)/Menu/MenuState.cpp \
 					$(DESCENT_LOGIC_SRC_PATH)/LevelFactory.cpp \
 					$(DESCENT_LOGIC_SRC_PATH)/Entities/GameTemplates.cpp \
@@ -174,17 +171,19 @@ LOCAL_SRC_FILES := $(DESCENT_ENGINE_EXTERNAL_PATH)/tinyxml2/tinyxml2.cpp \
 					$(DESCENT_LOGIC_SRC_PATH)/Menu/Aspects/NavigateMenuAspect.cpp \
 					$(DESCENT_LOGIC_SRC_PATH)/Menu/Aspects/StartMenuAspect.cpp 
 
-
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 
 LOCAL_C_INCLUDES := $(ADD_INCLUDES)
-LOCAL_MODULE    := libFastDescent
+LOCAL_MODULE    := FastDescentNativeActivity
 LOCAL_CPPFLAGS := $(DESCENT_CPP_FLAGS)
 LOCAL_SRC_FILES := android_main.cpp
 LOCAL_LDLIBS    := -llog -landroid -lGLESv1_CM
-LOCAL_STATIC_LIBRARIES := DescentEngine DescentLogic
+LOCAL_STATIC_LIBRARIES := cpufeatures android_native_app_glue ndk_helper DescentEngine DescentLogic
 
 include $(BUILD_SHARED_LIBRARY)
 
+$(call import-module,android/ndk_helper)
+$(call import-module,android/native_app_glue)
+$(call import-module,android/cpufeatures)

@@ -9,7 +9,6 @@
 #include "../../Entities/BloodEntity.h"
 
 #include "../../Entities/EnemyEntity.h"
-#include "../../Common/ChangeToGameInfo.h"
 #include <DescentEngine/src/StateEngine/StateChangeInfo.h>
 #include "../Util/SafePlacement.h"
 

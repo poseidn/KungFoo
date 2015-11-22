@@ -198,7 +198,7 @@ void OpenGL_ES_Render::renderSetupCam() {
 
 void OpenGL_ES_Render::setCameraLocation(ScreenTransform const& st, Vector3 const& vec, bool useOffsetX,
 		bool useOffsetY) {
-	m_defaultProjection = GLSupport::getParallelProjection(st.getScreenSize().x(), st.getScreenSize().y(),
+	m_defaultProjection = GLSupport::getParallelProjection(st.screenSizeInPixel().x(), st.screenSizeInPixel().y(),
 			-1.0f, 1.0f);
 
 	const Vector2 screenEdges = st.screenSizeInPixel();
@@ -228,6 +228,11 @@ void OpenGL_ES_Render::renderEnd(RenderState & state) {
 // swapping is done by the GLView on Java
 //eglSwapBuffers( state.m_display , state.m_surface);
 //eglSwapBuffers( eglGetCurrentDisplay(), eglGetCurrentSurface( EGL_DRAW ) );
+
+	//auto gl_context_ = ndk_helper::GLContext::GetInstance();
+	//state.context->Swap();
+	eglSwapBuffers(state.display, state.surface);
+
 #else
 	SDL_GL_SwapBuffers();
 #endif

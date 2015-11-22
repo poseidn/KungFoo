@@ -73,26 +73,41 @@
 
 struct DescentFrameworkBase: boost::noncopyable {
 
-	DescentFrameworkBase(bool asLevelEditor = false, bool demoMode = false, bool muted = false,
-			bool forwardScrool = true, bool withIntro = true, bool showFps = false, bool profile = false,
+#ifdef USE_SDL
+	SDLInput * m_hardwareInput = nullptr;
+#endif
+
+#ifdef USE_ANDROID
+	AndroidInput * m_hardwareInput = nullptr;
+#endif
+
+	DescentFrameworkBase(bool asLevelEditor = false, bool demoMode = false,
+			bool muted = false, bool forwardScrool = true,
+			bool withIntro = true, bool showFps = false, bool profile = false,
 			std::string profileFileName = "") :
-			m_asLevelEditor(asLevelEditor), m_demoMode(demoMode), m_muted(muted), m_forwardScroll(
-					forwardScrool), m_withIntro(withIntro), m_showFps(showFps), m_profile(profile), m_profileFileName(
+			m_asLevelEditor(asLevelEditor), m_demoMode(demoMode), m_muted(
+					muted), m_forwardScroll(forwardScrool), m_withIntro(
+					withIntro), m_showFps(showFps), m_profile(profile), m_profileFileName(
 					profileFileName) {
 
 		m_snd.setMuted(m_muted);
 
-		m_delayInput = new DelayedInput();
+		m_delayInput = std14::make_unique<DelayedInput>();
 
+		// todo memleak
 #ifdef USE_SDL
-		SDLInput * m_hardwareInput = new SDLInput();
+		m_hardwareInput = new SDLInput();
+		m_input.reset(new InputSystem( m_hardwareInput, m_delayInput.get()));
 #endif
 
 #ifdef USE_ANDROID
-		AndroidInput * m_hardwareInput = new AndroidInput();
+		m_hardwareInput = nullptr;
+		m_input.reset(new InputSystem());
+
+		// only single player for android atm
+		m_input->assignPlayerToInput(0,0);
 #endif
 
-		m_input.reset(new InputSystem(m_hardwareInput, m_delayInput));
 	}
 
 	~DescentFrameworkBase() {
@@ -117,32 +132,43 @@ struct DescentFrameworkBase: boost::noncopyable {
 	/*
 	 * needs to be fixed in android build
 	 * probably use glXMakeContextCurrent in the render thread*/
-	void initRenderEngine(RenderEngine::interface_type::InterfaceDataType & co) {
+	void initRenderEngine(
+			RenderEngine::interface_type::InterfaceDataType & co) {
 		m_re.init(co);
+
+		// can only do this, one the graphics backend is available
+		if (m_virtualControls)
+			enableVirtualControls();
+	}
+
+	void releaseRenderEngine() {
+		m_re.release();
+	}
+
+	bool isRenderEngineReady() {
+		return m_re.isInitialized();
+	}
+
+	// can be called to pause the game. Atm this only
+	// pauses the sound playback
+	void pauseGame() {
+		m_snd.pauseSound();
+	}
+
+	void resumeGame() {
+		m_snd.resumeSound();
+
 	}
 
 	void executeBase() {
 		logging::resetLogFile();
 
 		logging::Info() << "Starting framework";
-		logging::Info() << "Engines initialized";
 
 		initialize();
-
-		/*m_script.reset(new ScriptEngine(getResourceEngine()));
-
-		 // common stuff
-		 m_script->addObjectRegister([](lua_State * luaState)
-		 {
-		 luabind::module(luaState)[
-		 luabind::class_<TextVisual>("TextVisual")
-		 .def("setSizeScale", &TextVisual::setSizeScale )
-		 ];
-		 });*/
-
 		m_engines.reset(
-				new Engines(m_re, m_resources, m_an, m_ee, m_snd, m_rand, *(m_input.get()), m_physics,
-						*(m_script.get())));
+				new Engines(m_re, m_resources, m_an, m_ee, m_snd, m_rand,
+						*(m_input.get()), m_physics, *(m_script.get())));
 
 		logging::Info() << "GameState created";
 		m_gameState.reset(new GameState(*m_engines));
@@ -157,42 +183,52 @@ struct DescentFrameworkBase: boost::noncopyable {
 			float gameStartOffset = 0.0f;
 
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Kick,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Kick,
 							delayFactor * (1.0f + gameStartOffset)));
 
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Jump,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Jump,
 							delayFactor * (2.0f + gameStartOffset)));
 
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Kick,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Kick,
 							delayFactor * (5.0f + gameStartOffset)));
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Kick,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Kick,
 							delayFactor * (5.5f + gameStartOffset)));
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Kick,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Kick,
 							delayFactor * (6.4f + gameStartOffset)));
 
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Jump,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Jump,
 							delayFactor * (7.0f + gameStartOffset)));
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Kick,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Kick,
 							delayFactor * (8.0f + gameStartOffset)));
 
 			m_delayInput->addCommand(
-					DelayedInput::InputCommand(DelayedInput::InputCommand::ActionEnum::Exit,
+					DelayedInput::InputCommand(
+							DelayedInput::InputCommand::ActionEnum::Exit,
 							delayFactor * (15.0f + gameStartOffset)));
 		}
 
 		m_cinema.reset(new CinematicEngine(*m_engines));
 
 		m_introState.reset(new IntroState(*m_engines));
-		StateEngine<IntroState> * introEngine = new StateEngine<IntroState>(*m_introState);
+		StateEngine<IntroState> * introEngine = new StateEngine<IntroState>(
+				*m_introState);
 		introEngine->registerAspect(new InputIntroAspect<IntroState>());
 		introEngine->registerAspect(new AdvanceIntroAspect(*m_cinema));
-		introEngine->registerAspect(new CinematicAspect<IntroState, CinematicEngine>(*m_cinema));
+		introEngine->registerAspect(
+				new CinematicAspect<IntroState, CinematicEngine>(*m_cinema));
 		introEngine->registerAspect(new DebugFunctionAspect<IntroState>());
 
 		if (m_withIntro && (!m_asLevelEditor)) {
@@ -200,7 +236,8 @@ struct DescentFrameworkBase: boost::noncopyable {
 		}
 
 		m_menuState.reset(new MenuState(*m_engines));
-		StateEngine<MenuState> * menuEngine = new StateEngine<MenuState>(*m_menuState);
+		StateEngine<MenuState> * menuEngine = new StateEngine<MenuState>(
+				*m_menuState);
 		/*m_script->addObjectRegister([](lua_State * luaState)
 		 {
 		 luabind::module (luaState)[
@@ -224,7 +261,8 @@ struct DescentFrameworkBase: boost::noncopyable {
 		if (!m_asLevelEditor)
 			m_strans.addState("menu", menuEngine);
 
-		StateEngine<GameState> * stateEngine = new StateEngine<GameState>(*m_gameState);
+		StateEngine<GameState> * stateEngine = new StateEngine<GameState>(
+				*m_gameState);
 		/*
 		 m_script->addObjectRegister([](lua_State * luaState)
 		 {
@@ -244,7 +282,8 @@ struct DescentFrameworkBase: boost::noncopyable {
 		stateEngine->registerAspect(new StatusAspect());
 		stateEngine->registerAspect(new MovePlayerAspect(m_forwardScroll));
 		stateEngine->registerAspect(new EnemyAIAspect());
-		stateEngine->registerAspect(new ForwardScrollingAspect(m_forwardScroll));
+		stateEngine->registerAspect(
+				new ForwardScrollingAspect(m_forwardScroll));
 		stateEngine->registerAspect(new ScoringAspect());
 		stateEngine->registerAspect(new StartGameAspect());
 		stateEngine->registerAspect(new ComboDetectionAspect());
@@ -274,9 +313,11 @@ struct DescentFrameworkBase: boost::noncopyable {
 		if (m_asLevelEditor) {
 			m_levelState.reset(new GameState(*m_engines));
 
-			StateEngine<GameState> * levelEngine = new StateEngine<GameState>(*m_levelState);
+			StateEngine<GameState> * levelEngine = new StateEngine<GameState>(
+					*m_levelState);
 
-			levelEngine->registerAspect(new InputTranslationAspect<GameState>());
+			levelEngine->registerAspect(
+					new InputTranslationAspect<GameState>());
 			levelEngine->registerAspect(new FreeScrollingAspect());
 			levelEngine->registerAspect(new QuitAspect<GameState>());
 			levelEngine->registerAspect(new LevelEditorAspect(m_levelName));
@@ -287,15 +328,12 @@ struct DescentFrameworkBase: boost::noncopyable {
 		}
 
 		m_gameLoop.reset(
-				new GameLoop(m_re, m_strans, m_ee, m_an, getInputSystem(), m_physics, m_showFps, m_profile,
-						m_profileFileName));
+				new GameLoop(m_re, m_strans, m_ee, m_an, getInputSystem(),
+						m_physics, m_showFps, m_profile, m_profileFileName));
 
 		//m_gl->setInitialContentFunc(initialContentFunc);
 
 		logging::Info() << "Aspects registered";
-
-		if (m_virtualControls)
-			enableVirtualControls();
 
 		/*		auto texDpad = m_resources.loadImage("dpad1");
 		 SpriteVisual svDpad(m_re.getScreenTransform(), texDpad, Vector2(4.0f, 4.0f), Vector2::Unit(),
@@ -305,6 +343,7 @@ struct DescentFrameworkBase: boost::noncopyable {
 		// get the music going
 		//auto music1 = m_resources.loadMusic("musik1");
 		//m_snd.playMusic(music1);
+		logging::Info() << "Engines and Aspects initialized";
 
 		m_isInitialized = true;
 	}
@@ -355,7 +394,7 @@ protected:
 	PhysicsEngine m_physics;
 
 	//InputEgine * m_sdlInput;
-	DelayedInput * m_delayInput;
+	std::unique_ptr<DelayedInput> m_delayInput;
 
 	std::unique_ptr<Engines> m_engines;
 	std::unique_ptr<GameState> m_gameState;
@@ -379,14 +418,15 @@ protected:
 private:
 	void enableVirtualControls() {
 
+#ifdef USE_ANDROID
 		EntityFactory fact(*m_engines);
 
 		Vector2 sizeTiles = m_re.getScreenTransform().screenSizeInTiles();
+		m_input->setScreenTransform (m_re.getScreenTransform());
 
-		// will always be in the lower left corner
-		Vector2 posDpad(3.0f, 3.0f);
-		Vector2 posButton1(sizeTiles.x() - 3.0f, 6.5f);
-		Vector2 posButton2(sizeTiles.x() - 3.0f, 2.0f);
+		auto posDpad = m_input->getDpadPosition();
+		auto posButton1 = m_input->getButton1Position();
+		auto posButton2 = m_input->getButton2Position();
 
 		auto dpadEnt = fact.createFromTemplateName<SingleVisualEntity>("dpad1", posDpad);
 		dpadEnt->getActiveVisual().get().setIngame(m_re.getScreenTransform(), posDpad, false);
@@ -402,6 +442,9 @@ private:
 
 		// this also means, that we will not show any of the default control selections
 		m_menuState->setDeviceItemVisible(false);
+
+#endif
+
 	}
 
 }
@@ -434,6 +477,10 @@ public:
 
 #ifdef USE_ANDROID
 
+#include <android_native_app_glue.h>
+#include <android/asset_manager.h>
+#include <android/native_activity.h>
+
 class AndroidFramework: public DescentFrameworkBase
 {
 public:
@@ -457,17 +504,36 @@ public:
 	{
 	}
 
-	void setJavaInterface ( JNIEnv * env, jobject obj)
+	void setJavaInterface ( ANativeActivity * native_activity)
 	{
-		m_javaInterface = std14::make_unique<JavaInterface>( env, obj);
+		m_javaInterface = std14::make_unique<JavaInterface>( native_activity );
 		getResourceEngine().setJavaInterface ( m_javaInterface.get());
 		getSoundEngine().setJavaInterface ( m_javaInterface.get());
 	}
 
+	// todo : remove
 	void androidOnResume () {
 		getResourceEngine().reloadAllTextures();
 	}
 
+	void freeAllTextures() {
+		getResourceEngine().freeAllTextures();
+	}
+
+	void setAssetManager( AAssetManager * as) {
+		m_resources.setAssetManager(as);
+	}
+
+	InputSystem * getInputSystem() {
+		return m_input.get();
+	}
+
+	void execute()
+	{
+		executeBase();
+	}
+
+	// timeDelta in seconds since last call
 	void step ( float timeDelta)
 	{
 		m_gameLoop->step(timeDelta);

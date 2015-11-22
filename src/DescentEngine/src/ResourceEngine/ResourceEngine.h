@@ -59,8 +59,6 @@ public:
 
 	virtual std::string loadLevel(std::string const& levelName) = 0;
 
-	virtual std::string loadScript(std::string const& scriptName) = 0;
-
 	virtual std::string getScriptPath(std::string const & scriptName) {
 		logging::NotImplemented();
 		return "";

@@ -3,6 +3,7 @@ package com.fast.descent.resources;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
 import com.fast.descent.JavaLog;
@@ -11,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.IntBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -28,7 +30,7 @@ public class FileBackend {
 				+ fileName);
 		try {
 			InputStream streamFile;
-			String separator = System.getProperty( "line.separator" );
+			String separator = System.getProperty("line.separator");
 
 			streamFile = m_context.getAssets().open(fileName);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -37,8 +39,9 @@ public class FileBackend {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				out.append(line);
-				// add a newline explicitly, as it is not retured by the readLine() method
-				out.append( separator );
+				// add a newline explicitly, as it is not retured by the
+				// readLine() method
+				out.append(separator);
 			}
 			return out.toString();
 		} catch (IOException e) {
@@ -48,18 +51,10 @@ public class FileBackend {
 		}
 	}
 
-	public void setCurrentGl(GL10 gl) {
-		m_currentGl = gl;
-	}
-
 	public int loadTexture(String imageName) throws IOException {
 
 		// In which ID will we be storing this texture?
-		int id = newTextureID(m_currentGl);
-
-		// We need to flip the textures vertically:
-		// Matrix flip = new Matrix();
-		/* flip.postScale(1f, -1f); */
+		int id = newTextureID();
 
 		// This will tell the BitmapFactory to not scale based on the
 		// device's pixel density:
@@ -68,8 +63,6 @@ public class FileBackend {
 		opts.inScaled = false;
 
 		String fileName = FileBackend.ImageFolderName + imageName;
-		// has already been set by calling code
-		// + TextureConfig.DefaultExtension;
 
 		JavaLog.info(FileBackend.TAG, "Trying to load with full path "
 				+ fileName);
@@ -79,26 +72,13 @@ public class FileBackend {
 		Bitmap bmp = BitmapFactory.decodeStream(streamImageFile, null, opts);
 
 		streamImageFile.close();
-		/*
-		 * Bitmap bmp = Bitmap.createBitmap(temp, 0, 0, temp.getWidth(),
-		 * temp.getHeight(), flip, true);
-		 */
 
-		m_currentGl.glBindTexture(GL10.GL_TEXTURE_2D, id);
-
-		// Set all of our texture parameters:
-		// produces error on Nexus and seems not to be needed
-		/*m_currentGl.glTexParameterf(GL10.GL_TEXTURE_2D,
-				GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR_MIPMAP_NEAREST);
-		m_currentGl.glTexParameterf(GL10.GL_TEXTURE_2D,
-				GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR_MIPMAP_NEAREST);
-		m_currentGl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S,
-				GL10.GL_REPEAT);
-		m_currentGl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T,
-				GL10.GL_REPEAT);*/
+		GLES20.glBindTexture(GL10.GL_TEXTURE_2D, id);
 
 		// Generate, and load up all of the mipmaps:
+		// todo: we don't need that many levels, this will only eat up time
 		for (int level = 0, height = bmp.getHeight(), width = bmp.getWidth(); true; level++) {
+			JavaLog.info("Descent", "Creating level " + level);
 			// Push the bitmap onto the GPU:
 			GLUtils.texImage2D(GL10.GL_TEXTURE_2D, level, bmp, 0);
 
@@ -120,17 +100,19 @@ public class FileBackend {
 		}
 
 		bmp.recycle();
-		// temp.recycle();
 
 		return id;
 	}
 
-	private static int newTextureID(GL10 gl) {
+	public void freeTexture(int textureId) {
+		GLES20.glDeleteTextures(1, new int[] { textureId }, 0);
+	}
+
+	private static int newTextureID() {
 		int[] temp = new int[1];
-		gl.glGenTextures(1, temp, 0);
+		GLES20.glGenTextures(1, temp, 0);
 		return temp[0];
 	}
 
 	private Context m_context;
-	private GL10 m_currentGl;
 }

@@ -16,10 +16,6 @@ std::string ResourceEngineSDL::getScriptPath(std::string const & scriptName) {
 	return getScriptPrefix() + scriptName + ".lua";
 }
 
-std::string ResourceEngineSDL::loadScript(std::string const& scriptName) {
-	return loadTextFile(getScriptPath(scriptName));
-}
-
 std::string ResourceEngineSDL::loadTextFile(std::string const& fileName) {
 	std::ifstream fileIn(fileName);
 

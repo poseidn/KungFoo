@@ -20,11 +20,6 @@ public:
 	//typedef boost::ptr_map<std::string, StateBase> StateList;
 	typedef std::map<std::string, StateEngineBase*> StateEngineList;
 
-	StateTransitions() :
-			m_activeEngine(nullptr) {
-
-	}
-
 	~StateTransitions() {
 		for (auto & se : m_stateEngines) {
 			delete se.second;
@@ -33,6 +28,13 @@ public:
 
 	// returns true, if the state was changed
 	bool step(float delta) {
+
+		// if no state engine has been set yet, use the first one added
+		if (m_activeEngine == nullptr) {
+			m_activeEngine = m_firstEngine;
+			m_activeEngine->onActivateState(nullptr);
+		}
+
 		ensureActiveState();
 		getActiveEngine()->step(delta);
 
@@ -55,8 +57,8 @@ public:
 		m_stateEngines[stateName] = ngin;
 
 		// enable this one ?
-		if (m_activeEngine == nullptr) {
-			setActiveEngine(stateName);
+		if (m_firstEngine == nullptr) {
+			m_firstEngine = ngin;
 		}
 	}
 
@@ -71,7 +73,6 @@ public:
 		}
 
 		m_activeEngine = it->second;
-
 		m_activeEngine->onActivateState(changeInfo);
 	}
 
@@ -82,9 +83,9 @@ public:
 	bool wantsApplicationQuit() {
 		auto ae(getActiveEngine());
 		if (ae != nullptr)
-			return ae->getApplicationQuitRequest();
+		return ae->getApplicationQuitRequest();
 		else
-			return false;
+		return false;
 	}
 
 	std::string getDebugState() const {
@@ -100,6 +101,9 @@ public:
 private:
 	StateEngineList m_stateEngines;
 
-	StateEngineBase * m_activeEngine;
+	StateEngineBase * m_activeEngine = nullptr;
+	// the first engine which has been added
+	// this one will be set active on the first call to step.
+	StateEngineBase * m_firstEngine = nullptr;
 
 };

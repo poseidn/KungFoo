@@ -22,7 +22,8 @@ void MenuState::addMenuItem(MenuItem & item) {
 	Vector2 textPos(item.MarkerPos.x() + 0.9f, item.MarkerPos.y() - 0.5f);
 
 	TexturePtr textTex = getEngines().resourceEngine().loadImage("textChars");
-	auto textV = std14::make_unique< TextVisual>(getEngines().renderEngine().getScreenTransform(), textTex, textPos,
+	auto textV = std14::make_unique<TextVisual>(
+			getEngines().renderEngine().getScreenTransform(), textTex, textPos,
 			item.Text);
 	textV->setSizeScale(0.7f);
 	item.TextVis = textV.get();
@@ -36,20 +37,26 @@ void MenuState::addMenuItem(MenuItem & item) {
 
 void MenuState::bootstrapMenu() {
 	EntityFactory fact(getEngines());
-	auto bullet = fact. createFromTemplateName<SingleVisualEntity>("bullet", Vector2(0.0f, 0.0f));
-	bullet->getActiveVisual().get().setIngame(getEngines().renderEngine().getScreenTransform(),
+	auto bullet = fact.createFromTemplateName<SingleVisualEntity>("bullet",
+			Vector2(0.0f, 0.0f));
+	bullet->getActiveVisual().get().setIngame(
+			getEngines().renderEngine().getScreenTransform(),
 			Vector2(0.0f, 0.0f), false);
 	m_currentItemPointer = bullet.get();
 	m_currentItem = -1;
 
-	getEngines().entityEngine().addEntity(std::move(bullet), &getManagedEntityList());
+	getEngines().entityEngine().addEntity(std::move(bullet),
+			&getManagedEntityList());
 
-	auto loadingScreen = fact. createFromTemplateName<SingleVisualEntity>("loading-screen", Vector2(10.5f, 7.0f));
-	loadingScreen->getActiveVisual().get().setIngame(getEngines().renderEngine().getScreenTransform(),
+	auto loadingScreen = fact.createFromTemplateName<SingleVisualEntity>(
+			"loading-screen", Vector2(10.5f, 7.0f));
+	loadingScreen->getActiveVisual().get().setIngame(
+			getEngines().renderEngine().getScreenTransform(),
 			Vector2(10.5f, 7.0f), false);
 	loadingScreen->getActiveVisual().get().setVisible(false);
 	m_loadingPane = loadingScreen.get();
-	getEngines().entityEngine().addEntity(std::move(loadingScreen), &getManagedEntityList());
+	getEngines().entityEngine().addEntity(std::move(loadingScreen),
+			&getManagedEntityList());
 }
 
 size_t MenuState::activeDevices() const {
@@ -68,21 +75,27 @@ void MenuState::updateDevices() {
 	const size_t numEnabled = activeDevices();
 
 	for (auto & it : getDeviceItems()) {
-		// show disable only, if there is more than one disabled
-		it.m_DisableText->getActiveVisual().get().setVisible(false);
-		it.m_EnableText->getActiveVisual().get().setVisible(false);
 
-		if (m_deviceItemVisible) {
-			if (it.m_isEnabled /*&& (numEnabled > 1)*/) {
-				it.m_DisableText->getActiveVisual().get().setVisible(true);
+		// some devices might not have a icon
+		if (it.m_Icon != nullptr) {
+			// show disable only, if there is more than one disabled
+			it.m_DisableText->getActiveVisual().get().setVisible(false);
+			it.m_EnableText->getActiveVisual().get().setVisible(false);
+
+			if (m_deviceItemVisible) {
+				if (it.m_isEnabled /*&& (numEnabled > 1)*/) {
+					it.m_DisableText->getActiveVisual().get().setVisible(true);
+				}
+				if (!it.m_isEnabled && (numEnabled <= GameRules::MaxPlayers)) {
+					it.m_EnableText->getActiveVisual().get().setVisible(true);
+				}
 			}
-			if (!it.m_isEnabled && (numEnabled <= GameRules::MaxPlayers)) {
-				it.m_EnableText->getActiveVisual().get().setVisible(true);
-			}
+			// set transparency
+			it.m_Icon->getActiveVisual().get().setVisible(
+					it.m_isEnabled && m_deviceItemVisible);
+			it.m_IconPassive->getActiveVisual().get().setVisible(
+					(!it.m_isEnabled) && m_deviceItemVisible);
 		}
-		// set transparency
-		it.m_Icon->getActiveVisual().get().setVisible(it.m_isEnabled && m_deviceItemVisible);
-		it.m_IconPassive->getActiveVisual().get().setVisible((!it.m_isEnabled) && m_deviceItemVisible);
 	}
 }
 

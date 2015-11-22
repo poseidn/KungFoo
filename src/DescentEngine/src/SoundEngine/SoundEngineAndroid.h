@@ -15,7 +15,7 @@ public:
 
 	}
 
-	virtual PlayHandle playSound(SoundPtr snd, float direction = 0.0f) CPP11_OVERRIDE {
+	PlayHandle playSound(SoundPtr snd, float direction = 0.0f) CPP11_OVERRIDE {
 		if (isMuted())
 			return PlayHandle(0);
 
@@ -23,7 +23,7 @@ public:
 		return PlayHandle(hndl);
 	}
 
-	virtual PlayHandle playMusic(MusicPtr msc) CPP11_OVERRIDE {
+	PlayHandle playMusic(MusicPtr msc) CPP11_OVERRIDE {
 		if (isMuted())
 			return PlayHandle(0);
 
@@ -32,8 +32,16 @@ public:
 	}
 
 	// fadeOut time in ms
-	virtual void stopPlay(PlayHandle const& ph, float fadeOutTime = -1.0f) {
+	void stopPlay(PlayHandle const& ph, float fadeOutTime = -1.0f) CPP11_OVERRIDE {
 		m_javaInterface->stopPlay(ph, fadeOutTime);
+	}
+
+	void resumeSound() CPP11_OVERRIDE {
+		m_javaInterface->resumeSound();
+	}
+
+	void pauseSound() CPP11_OVERRIDE {
+		m_javaInterface->pauseSound();
 	}
 
 	virtual ~SoundEngineAndroid() {

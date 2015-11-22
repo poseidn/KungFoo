@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ResourceEngine.h"
+#include <android/asset_manager.h>
 
 #include "../JavaInterface.h"
 
@@ -12,7 +13,8 @@ public:
 	}
 
 	// todo: don't load the same image twice, but return a ref to the actually loaded
-	virtual TexturePtr loadImage(std::string const& imageName, unsigned int frames = 1) CPP11_OVERRIDE;
+	virtual TexturePtr loadImage(std::string const& imageName,
+			unsigned int frames = 1) CPP11_OVERRIDE;
 
 	virtual SoundPtr loadSound(std::string const& soundName) CPP11_OVERRIDE
 	{
@@ -26,17 +28,25 @@ public:
 
 	virtual std::string loadLevel(std::string const& levelName) CPP11_OVERRIDE;
 
-	virtual std::string loadScript(std::string const& scriptName) CPP11_OVERRIDE;
-
 	// just put an already loaded texture into the texture cache
-	virtual void preloadImage(std::string const& imageName, GLuint glId, size_t frameCount = 1) CPP11_OVERRIDE;
+	virtual void preloadImage(std::string const& imageName, GLuint glId,
+			size_t frameCount = 1) CPP11_OVERRIDE;
 
 	void setJavaInterface(JavaInterface * ji) {
 		m_javaInterface = ji;
 	}
 
 	// this is necessary if the application has been paused
+	// todo: remove
 	void reloadAllTextures();
+
+	// needs to be done before android destroys the OpenGL ES context
+	// todo: implement
+	void freeAllTextures();
+
+	void setAssetManager(AAssetManager * as) {
+		m_assetManager = as;
+	}
 
 protected:
 	void freeTexture(TexturePtr) CPP11_OVERRIDE {
@@ -50,18 +60,20 @@ protected:
 
 private:
 
-	TexturePtr loadImageIntern(std::string const& imageNameExt, unsigned int frames, bool useCache = true);
+	TexturePtr loadImageIntern(std::string const& imageNameExt,
+			unsigned int frames, bool useCache = true);
 
-	bool assertInterface() const {
-		if (m_javaInterface != nullptr) {
-			if (m_javaInterface->isValid())
-				return true;
+	bool assertAssetManager() const {
+		if (m_assetManager == nullptr) {
+			logging::Fatal()
+					<< "ResourceEngineAndroid: Java Interface not set properly";
+			return false;
 		}
-		logging::Fatal() << "ResourceEngineAndroid: Java Interface not set prorperly";
-		return false;
+		return true;
 	}
 
 	JavaInterface * m_javaInterface;
+	AAssetManager * m_assetManager = nullptr;
 
 };
 

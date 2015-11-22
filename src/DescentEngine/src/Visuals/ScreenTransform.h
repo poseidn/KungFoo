@@ -22,14 +22,15 @@ public:
 	}
 
 	ScreenTransform(Vector2 tileSize, Vector2 screenSize) :
-			m_tileSizeX(tileSize.x()), m_tileSizeY(tileSize.y()), m_tileAmountX(screenSize.x() / tileSize.x()), m_tileAmountY(
+			m_tileSizeX(tileSize.x()), m_tileSizeY(tileSize.y()), m_tileAmountX(
+					screenSize.x() / tileSize.x()), m_tileAmountY(
 					screenSize.y() / tileSize.y()), m_screenSize(screenSize) {
 
 	}
 
 	// the screen-independent corrd-system assumes 1 unit per default tile in x and y direction
-	void quadToScreen(float & upperX, float & upperY, float & lowerX, float & lowerY,
-			bool useOffset = true) const {
+	void quadToScreen(float & upperX, float & upperY, float & lowerX,
+			float & lowerY, bool useOffset = true) const {
 		upperX *= m_tileSizeX;
 		lowerX *= m_tileSizeX;
 
@@ -45,7 +46,9 @@ public:
 		}
 	}
 
-	Vector3 vectorToScreen(Vector3 const& vec, bool useOffsetX = true, bool useOffsetY = true) const {
+	// compute the screen location of a vector, which is in tile units
+	Vector3 vectorToScreen(Vector3 const& vec, bool useOffsetX = true,
+			bool useOffsetY = true) const {
 		auto v = Vector3(vec.x() * m_tileSizeX, vec.y() * m_tileSizeY, vec.z());
 		v.setX((useOffsetX * m_offset.x()) + v.x());
 		v.setY((useOffsetY * m_offset.y()) + v.y());
@@ -53,7 +56,9 @@ public:
 		return v;
 	}
 
-	Vector2 vectorToScreen(Vector2 const& vec, bool useOffsetX = true, bool useOffsetY = true) const {
+	// compute the screen location of a vector, which is in tile units
+	Vector2 vectorToScreen(Vector2 const& vec, bool useOffsetX = true,
+			bool useOffsetY = true) const {
 		Vector3 vec3(vec.x(), vec.y(), 0.0f);
 		Vector3 vec3Trans = vectorToScreen(vec3, useOffsetX, useOffsetY);
 
@@ -66,13 +71,17 @@ public:
 		withOffset.setY(vecScreen.y() - m_offset.y());
 		withOffset.setZ(vecScreen.z());
 
-		return Vector3(withOffset.x() / m_tileSizeX, withOffset.y() / m_tileSizeY, withOffset.z());
+		return Vector3(withOffset.x() / m_tileSizeX,
+				withOffset.y() / m_tileSizeY, withOffset.z());
 	}
 
+	// returns the size of the screen in x and y direction in units
+	// of tiles
 	Vector2 screenSizeInTiles() const {
 		return Vector2(m_tileAmountX, m_tileAmountY);
 	}
 
+	// returns the screen size in x and y direction in pixels
 	Vector2 const& screenSizeInPixel() const {
 		return m_screenSize;
 	}
@@ -85,21 +94,17 @@ public:
 	Vector2 const& getOffset() const {
 		return m_offset;
 	}
-	/*
-	 Vector2 const& getOffsetInTiles() const {
-	 return m_offset;
-	 }*/
 
-	Vector2 const& getScreenSize() const {
-		return m_screenSize;
-	}
-
+	// returns the number of pixels in x and y direction to completely fill one tile
+	// Another way to put it is the "tile size in pixels"
 	Vector2 getTileSize() const {
 		return Vector2(m_tileSizeX, m_tileSizeY);
 	}
 
 private:
+	// stores how many pixel make up one tile in x direction
 	float m_tileSizeX;
+	// stores how many pixel make up one tile in y direction
 	float m_tileSizeY;
 
 	float m_tileAmountX;
