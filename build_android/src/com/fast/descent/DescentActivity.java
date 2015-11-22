@@ -126,7 +126,8 @@ public class DescentActivity extends Activity {
 
 		// preload Sound backend
 		try {
-			m_soundBackend.preloadMusic(this, "musik1");
+			// no music included, yet
+			//m_soundBackend.preloadMusic(this, "musik1");
 			m_soundBackend.preloadSound(this, "player_jump1");
 			m_soundBackend.preloadSound(this, "player_kick1");
 			m_soundBackend.preloadSound(this, "player_yell1");
