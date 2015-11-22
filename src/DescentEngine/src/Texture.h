@@ -53,6 +53,10 @@ public:
 		return (m_animationFrames > 1);
 	}
 
+	bool isBound() const {
+		return m_bound;
+	}
+
 	unsigned int getAnimationFrames() const {
 		return m_animationFrames;
 	}
@@ -60,10 +64,6 @@ public:
 	// this has to be done here because we have to ensure, that
 	// all OpenGl calls happen on the Render Thread
 	void ensureOpenGLBind();
-
-	void clearBound() {
-		m_bound = false;
-	}
 
 #ifdef DESCENT_TEXTURE_NAME_DEBUG
 	void setTextureName(std::string const& name) {

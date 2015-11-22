@@ -1,7 +1,13 @@
 #include "Texture.h"
 
+// todo: rename, this does not actually bind, but setup parameters
 void Texture::ensureOpenGLBind() {
 	if (!m_bound) {
+#ifdef USE_ANDROID
+		logging::Fatal() << "Texture bound was called on Android-compile code."
+				<< "Must not happen because texture binding to context happens on Java-side "
+				<< "when loading the texture's image.";
+#endif
 		// only executed for x86 build
 		// for the Android platform, the textures are bound on the java side
 
