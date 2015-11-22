@@ -353,14 +353,17 @@ public class DescentActivity extends Activity {
 		JavaLog.info(TAG, "onPause called");
 		super.onPause();
 		m_soundBackend.pauseSound();
+		// tells the GLView to pause, might release the EGL Context
 		m_view.onPause();
 	}
 
+	// is also called if the app is started !
 	@Override
 	protected void onResume() {
 		JavaLog.info(TAG, "onResume called");
 		super.onResume();
 		m_soundBackend.resumeSound();
+		// tells the GLView to resume, recreates EGL Context but not content (textures etc.)
 		m_view.onResume();
 	}
 
