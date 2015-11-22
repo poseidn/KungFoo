@@ -47,7 +47,6 @@ void ResourceEngineAndroid::reloadAllTextures() {
 		logging::Info() << "Prev id : " << tex.second->getID() << " newId: " << texPtr->getID();
 		tex.second->setID(texPtr->getID());
 		tex.second->setPixelPointer(texPtr->getPixelPointer());
-		tex.second->clearBound();
 	}
 }
 
