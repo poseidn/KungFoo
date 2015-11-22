@@ -154,7 +154,6 @@ public class SoundBackend {
 		m_soundPool.autoPause();
 
 		// stop all music
-		// todo: store the state of each sample and run again on resume
 		for (Map.Entry<String, Music> entry : m_music.entrySet()) {
 			Music ms = entry.getValue();
 			MediaPlayer mplay = ms.getMediaPlayer();
