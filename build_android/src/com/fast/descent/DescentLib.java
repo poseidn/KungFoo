@@ -41,12 +41,7 @@ public class DescentLib {
 		m_fileBackend = fileBackend;
 	}
 
-	/**
-	 * @param width
-	 *            the current view width
-	 * @param height
-	 *            the current view height
-	 */
+	// C++ functions made available to Java side
 	public native void initEngines(int width, int height);
 
 	public native void initGame();
@@ -71,6 +66,8 @@ public class DescentLib {
 
 	public native float getTileSizeY();
 
+	// Java methods made available to the C++ side
+	
 	// will be called to load levels, for example
 	public String readTextFile(String name) {
 		String result = m_fileBackend.readTextFile(name);
@@ -103,6 +100,8 @@ public class DescentLib {
 		return id;
 	}
 
+	// sets the correct openGl context for the Java-side file backend
+    // which is used if textures get loaded from the C++ side
 	public void setCurrentGl(GL10 gl) {
 		m_fileBackend.setCurrentGl(gl);
 	}
