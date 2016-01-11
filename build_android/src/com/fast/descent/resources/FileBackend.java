@@ -73,32 +73,16 @@ public class FileBackend {
 
 		streamImageFile.close();
 
-		GLES20.glBindTexture(GL10.GL_TEXTURE_2D, id);
+		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, id);
 
-		// Generate, and load up all of the mipmaps:
-		// todo: we don't need that many levels, this will only eat up time
-		for (int level = 0, height = bmp.getHeight(), width = bmp.getWidth(); true; level++) {
-			JavaLog.info("Descent", "Creating level " + level);
-			// Push the bitmap onto the GPU:
-			GLUtils.texImage2D(GL10.GL_TEXTURE_2D, level, bmp, 0);
-
-			// We need to stop when the texture is 1x1:
-			if (height == 1 && width == 1)
-				break;
-
-			// Resize, and let's go again:
-			width >>= 1;
-			height >>= 1;
-			if (width < 1)
-				width = 1;
-			if (height < 1)
-				height = 1;
-
-			Bitmap bmp2 = Bitmap.createScaledBitmap(bmp, width, height, true);
-			bmp.recycle();
-			bmp = bmp2;
-		}
-
+		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
+		// by default the min texture filter will use the
+		// GL_NEAREST_MIPMAP_LINEAR
+		// setting, which uses mip-map, which are not generated and downloaded
+		// by this
+		// code
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
+				GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
 		bmp.recycle();
 
 		return id;
