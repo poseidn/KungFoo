@@ -18,10 +18,6 @@ public:
 
 	}
 
-	// todo: also use suspend here to not kill a game state
-	// completely, but merely pause it and don't process user
-	// input
-
 	void onActivateState(StateChangeInfoPtr const& changeInfo) CPP11_OVERRIDE {
 		m_act++;
 	}
@@ -65,9 +61,10 @@ TEST(StateTransitions, switchStates) {
 	ASSERT_EQ(st.getActiveEngine(), nullptr);
 
 	st.addState("s1", state1);
-	ASSERT_EQ(st.getActiveEngine(), state1);
-
 	st.addState("s2", state2);
+
+	// state is only loaded after the first step() call
+	st.step(0.1f);
 	ASSERT_EQ(st.getActiveEngine(), state1);
 
 	st.setActiveEngine("s2");
