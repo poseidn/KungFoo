@@ -2,9 +2,7 @@ cmake_minimum_required (VERSION 2.6)
 project (descent)
 
 # CPack Setup 
-#SET(CPACK_GENERATOR "DEB")
 SET(CPACK_GENERATOR "TGZ")
-SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "David Doria")
 
 include ( CPack )
 
