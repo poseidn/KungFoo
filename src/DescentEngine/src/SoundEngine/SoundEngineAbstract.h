@@ -29,6 +29,15 @@ public:
 		return m_mute;
 	}
 
+	virtual void startVibratePattern(std::string const&) {
+	}
+
+	virtual void stopAllViberatePatterns() {
+	}
+
+	virtual void stopVibratePattern(std::string const&) {
+	}
+
 	void setMuted(bool m) {
 		m_mute = m;
 	}

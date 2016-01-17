@@ -164,6 +164,44 @@ public:
 		return res;
 	}
 
+	void startVibratePattern(std::string const& patternName) {
+		assert(m_valid);
+		{
+			JniThreadAttachWrapper wrapper(m_native_activity);
+			jmethodID mid = JavaTools::findJavaMethod(wrapper.getJNIEnv(),
+					m_native_activity->clazz, "startVibratePattern",
+					"(Ljava/lang/String;)V");
+			jstring js = JavaTools::toJavaString(wrapper.getJNIEnv(),
+					patternName);
+			wrapper.getJNIEnv()->CallVoidMethod(m_native_activity->clazz, mid,
+					js);
+		}
+	}
+
+	void stopAllViberatePatterns() {
+		assert(m_valid);
+		{
+			JniThreadAttachWrapper wrapper(m_native_activity);
+			jmethodID mid = JavaTools::findJavaMethod(wrapper.getJNIEnv(),
+					m_native_activity->clazz, "stopAllViberatePatterns", "()V");
+			wrapper.getJNIEnv()->CallVoidMethod(m_native_activity->clazz, mid);
+		}
+	}
+
+	void stopVibratePattern(std::string const& patternName) {
+		assert(m_valid);
+		{
+			JniThreadAttachWrapper wrapper(m_native_activity);
+			jmethodID mid = JavaTools::findJavaMethod(wrapper.getJNIEnv(),
+					m_native_activity->clazz, "stopVibratePattern",
+					"(Ljava/lang/String;)V");
+			jstring js = JavaTools::toJavaString(wrapper.getJNIEnv(),
+					patternName);
+			wrapper.getJNIEnv()->CallVoidMethod(m_native_activity->clazz, mid,
+					js);
+		}
+	}
+
 	void freeTexture(int textureId) {
 		assert(m_valid);
 		int res;

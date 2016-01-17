@@ -32,7 +32,8 @@ public:
 	}
 
 	// fadeOut time in ms
-	void stopPlay(PlayHandle const& ph, float fadeOutTime = -1.0f) CPP11_OVERRIDE {
+	void stopPlay(PlayHandle const& ph, float fadeOutTime = -1.0f)
+			CPP11_OVERRIDE {
 		m_javaInterface->stopPlay(ph, fadeOutTime);
 	}
 
@@ -45,6 +46,18 @@ public:
 	}
 
 	virtual ~SoundEngineAndroid() {
+	}
+
+	void startVibratePattern(std::string const& patternName) CPP11_OVERRIDE {
+		m_javaInterface->startVibratePattern(patternName);
+	}
+
+	void stopAllViberatePatterns() CPP11_OVERRIDE {
+		m_javaInterface->stopAllViberatePatterns();
+	}
+
+	void stopVibratePattern(std::string const& patternName) CPP11_OVERRIDE {
+		m_javaInterface->stopVibratePattern(patternName);
 	}
 
 	void setJavaInterface(JavaInterface * ji) {

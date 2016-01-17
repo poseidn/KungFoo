@@ -1,6 +1,7 @@
 #include "AttackAspect.h"
 
 #include <DescentEngine/src/EntityEngine/EntityFactory.h>
+#include <DescentEngine/src/SoundEngine/SoundEngine.h>
 
 #include "../GameState.h"
 #include "../../Entities/GameTemplates.h"
@@ -8,6 +9,7 @@
 #include "../../Entities/EnemyEntity.h"
 #include "../../Entities/WallEntity.h"
 #include "../../Config/EnemyBehaviour.h"
+#include "../../Config/VibratePatterns.h"
 #include "../../Config/PlayerMovement.h"
 #include "../../Config/GameRules.h"
 #include "../../Entities/TextureIds.h"
@@ -49,6 +51,7 @@ void AttackAspect::step(GameState & gs, float deltaT) {
 				}
 
 				logging::Info() << "Enemy player hit";
+				gs.getEngines().soundEngine().startVibratePattern( VibratePatterns().EnemyPunched );
 				if ( attacker->getBikingAction().isActive())
 				{
 					enemy->subtractLife( 127);
@@ -81,10 +84,13 @@ void AttackAspect::step(GameState & gs, float deltaT) {
 			continue;
 
 		// check if the player kicks and whether there is an enemy close by
-		if ((pent->getKickAction().isActive() && !pent->getKickAction().wasProcessed())
-				|| (pent->getBikingAction().isActive() && !pent->getBikingAction().wasProcessed())) {
+		if ((pent->getKickAction().isActive()
+				&& !pent->getKickAction().wasProcessed())
+				|| (pent->getBikingAction().isActive()
+						&& !pent->getBikingAction().wasProcessed())) {
 
-			attackOnList(pent, gs.getEnemies(), hitEnemy, &pd, PlayerMovement::AttackAngle,
+			attackOnList(pent, gs.getEnemies(), hitEnemy, &pd,
+					PlayerMovement::AttackAngle,
 					PlayerMovement::AttackRangeSquared, EnemyBehaviour::HitTime,
 					PlayerMovement::KickAffectCount);
 
@@ -106,10 +112,14 @@ void AttackAspect::step(GameState & gs, float deltaT) {
 
 	// checks for enemies hitting player
 	for (auto * enemy : gs.getEnemies()) {
-		if (enemy->getKickAction().isActive() && !enemy->getKickAction().wasProcessed()) {
+		if (enemy->getKickAction().isActive()
+				&& !enemy->getKickAction().wasProcessed()) {
 
-			attackOnList(enemy, playerFakeList, hitOnPlayer, nullptr, PlayerMovement::AttackAngle,
-					PlayerMovement::AttackRangeSquared, EnemyBehaviour::HitTime, 1);
+
+			attackOnList(enemy, playerFakeList, hitOnPlayer, nullptr,
+					PlayerMovement::AttackAngle,
+					PlayerMovement::AttackRangeSquared, EnemyBehaviour::HitTime,
+					1);
 			enemy->getKickAction().setProcessed();
 		}
 	}

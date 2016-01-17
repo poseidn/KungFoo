@@ -11,6 +11,7 @@
 
 #include <DescentLogic/src/Entities/PlayerEntity.h>
 #include <DescentLogic/src/Config/GameRules.h>
+#include <DescentLogic/src/Config/VibratePatterns.h>
 #include <DescentLogic/src/Game/Util/SafePlacement.h>
 
 #include "../GameState.h"
@@ -21,41 +22,45 @@ void DieAspect::init(GameState & gameState) {
 	gameState.slotStep.subscribe([=] ( GameState & g, float t)
 	{	this->step(g,t);}, "DieAspect.step");
 
-	gameState.slotActivateState.subscribe([=] ( GameState & gs, StateChangeInfoPtr const& ci )
-	{
-		EntityFactory fact(gs.getEngines());
-		for ( auto i: boost::irange(size_t(0),GameRules::MaxPlayers)) {
-			// initial location not important, will be reset anyway
-			auto ent = fact. createFromTemplateName<SingleVisualEntity>("player_arrow",
-					Vector2(0.0f, 0.0f));
-			ent->getActiveVisual().get().setVisible(false);
+	gameState.slotActivateState.subscribe(
+			[=] ( GameState & gs, StateChangeInfoPtr const& ci )
+			{
+				EntityFactory fact(gs.getEngines());
+				for ( auto i: boost::irange(size_t(0),GameRules::MaxPlayers)) {
+					// initial location not important, will be reset anyway
+					auto ent = fact. createFromTemplateName<SingleVisualEntity>("player_arrow",
+							Vector2(0.0f, 0.0f));
+					ent->getActiveVisual().get().setVisible(false);
 
-			m_marker[i] = ent.get();
-			gs.getEngines().entityEngine().addEntity(std::move(ent));
-		}
-	});
+					m_marker[i] = ent.get();
+					gs.getEngines().entityEngine().addEntity(std::move(ent));
+				}
+			});
 
 	gameState.slotDeactivateState.subscribe([=] ( GameState & gs ) {
 		stopSiren( gs);
 	});
 
-	gameState.slotDeactivateState.subscribe([=] ( GameState & gs )
-	{
-		for ( size_t i = 0; i < GameRules::MaxPlayers; i++ ) {
-			gs.getEngines().entityEngine().removeEntity( m_marker[i], gs.getEngines() );
-		}
-	});
+	gameState.slotDeactivateState.subscribe(
+			[=] ( GameState & gs )
+			{
+				for ( size_t i = 0; i < GameRules::MaxPlayers; i++ ) {
+					gs.getEngines().entityEngine().removeEntity( m_marker[i], gs.getEngines() );
+				}
+			});
 
 }
 
-void DieAspect::updateMarker(PlayerData & pd, bool belowHorizon, Vector3 const& camLocation) {
+void DieAspect::updateMarker(PlayerData & pd, bool belowHorizon,
+		Vector3 const& camLocation) {
 
 	SingleVisualEntity * marker = m_marker.at(pd.Id);
 	marker->getActiveVisual().get().setVisible(belowHorizon);
 
 	if (belowHorizon) {
 		// move the marker just to the lower part of the screen
-		marker->setMoveIntent(Vector2(pd.Entity->getPosition().x(), camLocation.y() + 1.3f));
+		marker->setMoveIntent(
+				Vector2(pd.Entity->getPosition().x(), camLocation.y() + 1.3f));
 	}
 
 }
@@ -70,13 +75,15 @@ void DieAspect::step(GameState & gs, float deltaT) {
 		}
 
 		// check if the player has been moved outside of the game area
-		const Vector3 camVec = gs.getEngines().renderEngine().getCameraLocation();
+		const Vector3 camVec =
+				gs.getEngines().renderEngine().getCameraLocation();
 
 		util::initMap(m_deathInfo, pd.Id);
 		DeathInfo & dInfo = m_deathInfo[pd.Id];
 
 		// don't check this stuff for players which are already dead
-		if (((pent->getPosition().y() + GameRules::DeadPositionTolerance) < camVec.y()) && (!pd.IsDead)) {
+		if (((pent->getPosition().y() + GameRules::DeadPositionTolerance)
+				< camVec.y()) && (!pd.IsDead)) {
 			// in the dead zone
 			updateMarker(pd, true, camVec);
 
@@ -84,8 +91,12 @@ void DieAspect::step(GameState & gs, float deltaT) {
 			if (dInfo.TimeDead < 0.0f) {
 
 				dInfo.TimeDead = GameRules::DeadTolerance;
-				auto soundRes = gs.getEngines().resourceEngine().loadSound("dead_siren");
-				m_dieWarningSound = gs.getEngines().soundEngine().playSound(soundRes);
+				auto soundRes = gs.getEngines().resourceEngine().loadSound(
+						"dead_siren");
+				m_dieWarningSound = gs.getEngines().soundEngine().playSound(
+						soundRes);
+				gs.getEngines().soundEngine().startVibratePattern(
+						VibratePatterns().PlayerOutOfScreen);
 			} else {
 				dInfo.TimeDead -= deltaT;
 
@@ -93,6 +104,8 @@ void DieAspect::step(GameState & gs, float deltaT) {
 					// totally dead
 					logging::Info() << "Player died !";
 					stopSiren(gs);
+					gs.getEngines().soundEngine().stopVibratePattern(
+							VibratePatterns().PlayerOutOfScreen);
 
 					playerDied(gs, pd);
 					updateMarker(pd, false, camVec);
@@ -104,17 +117,21 @@ void DieAspect::step(GameState & gs, float deltaT) {
 				updateMarker(pd, false, camVec);
 				dInfo.TimeDead = -1.0f;
 				stopSiren(gs);
+				gs.getEngines().soundEngine().stopVibratePattern(
+						VibratePatterns().PlayerOutOfScreen);
 			}
 		}
 
 		// don't care about the position
 		// is this player dead and we can respawn ?
-		if ((gs.getGameMode() == GameMode::Coop) && (pd.IsDead) && (pd.RespawnTime > 0.0f)) {
+		if ((gs.getGameMode() == GameMode::Coop) && (pd.IsDead)
+				&& (pd.RespawnTime > 0.0f)) {
 			//logging::Info() << "checking respawning player id " << pd.Id;
 			//logging::Info() << "respawning time " << pd.RespawnTime;
 			pd.RespawnTime -= deltaT;
 		}
-		if ((gs.getGameMode() == GameMode::Coop) && (pd.IsDead) && (pd.RespawnTime <= 0.0f)) {
+		if ((gs.getGameMode() == GameMode::Coop) && (pd.IsDead)
+				&& (pd.RespawnTime <= 0.0f)) {
 			// some players need to be respawned ?
 			playerRespawn(gs, pd);
 		}
@@ -124,14 +141,17 @@ void DieAspect::step(GameState & gs, float deltaT) {
 void DieAspect::playerRespawn(GameState & gs, PlayerData & pd) {
 	const Vector3 camVec = gs.getEngines().renderEngine().getCameraLocation();
 
-	logging::Info() << "respawning player id " << pd.Id << "at campos " << camVec.x() << ":" << camVec.y();
+	logging::Info() << "respawning player id " << pd.Id << "at campos "
+			<< camVec.x() << ":" << camVec.y();
 
 	// it is ok, if the respawned player emerges from the upper part of the screen
 	auto respawnPos = Vector2(4.0f, camVec.y() + 12.0f);
-	auto safePos = game_util::findSafePlacement(respawnPos, 2.0f, 4.0f, gs.getEngines(), gs);
+	auto safePos = game_util::findSafePlacement(respawnPos, 2.0f, 4.0f,
+			gs.getEngines(), gs);
 
-	logging::Info() << "respawning placing player at " << safePos.second.x() << ":" << safePos.second.y()
-			<< " with perfect pos being " << respawnPos.x() << ":" << respawnPos.y();
+	logging::Info() << "respawning placing player at " << safePos.second.x()
+			<< ":" << safePos.second.y() << " with perfect pos being "
+			<< respawnPos.x() << ":" << respawnPos.y();
 	// if not successful, don't place now, but try the next round
 	if (safePos.first) {
 		pd.Entity->setPositionHard(safePos.second);
@@ -145,7 +165,8 @@ void DieAspect::playerDied(GameState & gs, PlayerData & pd) {
 	assert(!pd.IsDead);
 
 // is this the only player which was alive ?
-	const size_t playersAlive = std::count_if(gs.getPlayers().begin(), gs.getPlayers().end(),
+	const size_t playersAlive = std::count_if(gs.getPlayers().begin(),
+			gs.getPlayers().end(),
 			[](PlayerData const& p ) {return ! p .IsDead;});
 
 	pd.IsDead = true;
@@ -158,7 +179,8 @@ void DieAspect::playerDied(GameState & gs, PlayerData & pd) {
 		pd.RespawnTime = GameRules::RespawnTime;
 		// using the static const for respawn with the ostream directly results in a linker error...
 		const float resp = GameRules::RespawnTime;
-		logging::Info() << "Starting respawn with " << resp << " s for player " << pd.Id;
+		logging::Info() << "Starting respawn with " << resp << " s for player "
+				<< pd.Id;
 	}
 
 }

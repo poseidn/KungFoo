@@ -11,6 +11,7 @@
 
 #include "../GameState.h"
 #include "../../Config/PlayerMovement.h"
+#include "../../Config/VibratePatterns.h"
 #include "../../Config/GameMovement.h"
 
 #include "../../Entities/PlayerEntity.h"
@@ -21,8 +22,9 @@ void MovePlayerAspect::init(GameState & gs) {
 	gs.slotStep.subscribe([this] ( GameState & g, float t)
 	{	this->step(g,t);}, "MovePlayerAspect.step");
 
-	gs.slotPlayerMove.subscribe([this] ( GameState & g, Vector2 const& v, PlayerId id )
-	{	this->playerMove(g,v, id);});
+	gs.slotPlayerMove.subscribe(
+			[this] ( GameState & g, Vector2 const& v, PlayerId id )
+			{	this->playerMove(g,v, id);});
 
 	gs.slotPlayerJump.subscribe([this] ( GameState & g, PlayerId id )
 	{	this->playerJump(g, id);});
@@ -66,13 +68,15 @@ void MovePlayerAspect::step(GameState & gs, float deltaT) {
 		/*logging::Debug() << "residual before reduction is " << std::setprecision(4)
 		 << resMovementMag;*/
 
-		const float movementDecay = computeMovementDecay(maxSpeed, resMovementMag); // 2.0f per second
+		const float movementDecay = computeMovementDecay(maxSpeed,
+				resMovementMag); // 2.0f per second
 		// apply decay
 		resMovementMag = resMovementMag - movementDecay * deltaT;
 		resMovementMag = std::max(0.0f, resMovementMag);
 
 		//logging::Debug() << "residual is " << std::setprecision(4) << resMovementMag;
-		mov.m_residualMovement = mov.m_residualMovement.normalizedCopy() * resMovementMag;
+		mov.m_residualMovement = mov.m_residualMovement.normalizedCopy()
+				* resMovementMag;
 
 		// combine
 		Vector2 thisMovement = mov.m_stepMovement + mov.m_residualMovement;
@@ -97,24 +101,30 @@ void MovePlayerAspect::step(GameState & gs, float deltaT) {
 		pent->validateActions(deltaT, PlayerMovement::HitRegenTime);
 
 		if (mov.m_jumpInit && pent->getJumpAction().canActivate()) {
-			auto snd = gs.getEngines().resourceEngine().loadSound("player_jump1");
+			auto snd = gs.getEngines().resourceEngine().loadSound(
+					"player_jump1");
+			gs.getEngines().soundEngine().startVibratePattern(
+					VibratePatterns().PlayerJump);
 			gs.getEngines().soundEngine().playSound(snd, direction.result());
 			pent->getJumpAction().activate(PlayerMovement::JumpTime);
 
 			pent->setCollisionGroup(GameCollisionGroups::CharactersJump);
-			pent->setCollisionMask(GameCollisionGroups::CharactersJump_CollidesWith);
+			pent->setCollisionMask(
+					GameCollisionGroups::CharactersJump_CollidesWith);
 		}
 
 		if (pent->getJumpAction().wasJustDisabled()) {
 			// set back to no jump mode, if necessary
 			pent->setCollisionGroup(GameCollisionGroups::Characters);
-			pent->setCollisionMask(GameCollisionGroups::Characters_CollidesWith);
+			pent->setCollisionMask(
+					GameCollisionGroups::Characters_CollidesWith);
 		}
 
 		if (mov.m_kickInit && pent->getKickAction().canActivate()) {
 			// make this more event base
 			// disabled because the sounds seems not to load
-			auto snd = gs.getEngines().resourceEngine().loadSound("player_kick1");
+			auto snd = gs.getEngines().resourceEngine().loadSound(
+					"player_kick1");
 			gs.getEngines().soundEngine().playSound(snd, direction.result());
 
 			pent->getKickAction().activate(PlayerMovement::KickTime);
@@ -128,8 +138,10 @@ void MovePlayerAspect::step(GameState & gs, float deltaT) {
 				soundName << "player_yell" << randPick << "";
 
 				// disabled because the sounds seems not to load
-				auto snd = gs.getEngines().resourceEngine().loadSound(soundName.str());
-				gs.getEngines().soundEngine().playSound(snd, direction.result());
+				auto snd = gs.getEngines().resourceEngine().loadSound(
+						soundName.str());
+				gs.getEngines().soundEngine().playSound(snd,
+						direction.result());
 			}
 		}
 
@@ -146,14 +158,17 @@ void MovePlayerAspect::step(GameState & gs, float deltaT) {
 		mov.m_bikingInit = false;
 
 		if (pent->getJumpAction().isActive())
-			thisMovement = thisMovement * PlayerMovement::JumpIncreaseSpeedFactor;
+			thisMovement = thisMovement
+					* PlayerMovement::JumpIncreaseSpeedFactor;
 
 		// store for next rounds .. this has to done before the scrolling speed increase
 		// otherwise the speed is too fast...
 		mov.m_residualMovement = thisMovement;
 
-		if (gs.getScrollActive() && m_scrollEnabled && !pent->getBikingAction().isActive()) {
-			thisMovement = thisMovement + Vector2::UnitY() * GameMovement::ScrollSpeed * deltaT;
+		if (gs.getScrollActive() && m_scrollEnabled
+				&& !pent->getBikingAction().isActive()) {
+			thisMovement = thisMovement
+					+ Vector2::UnitY() * GameMovement::ScrollSpeed * deltaT;
 			// limit the y-speed sepaeretley, because we added the scroll speed
 			// should always be positive, the player can not stand still
 			// allow a bit more speed in this direction, using the factor 1.2
@@ -167,7 +182,8 @@ void MovePlayerAspect::step(GameState & gs, float deltaT) {
 		if (pent->getBikingAction().isActive()) {
 			// limit sideway movement
 			//thisMovement.setX(thisMovement.x() * 0.2f);
-			thisMovement.setX(thisMovement.x() * PlayerMovement::BikingMaxMovement);
+			thisMovement.setX(
+					thisMovement.x() * PlayerMovement::BikingMaxMovement);
 			thisMovement.setY(GameMovement::ScrollSpeed * deltaT * 1.1f);
 			pent->setDirection(Vector2::UnitY());
 		}
@@ -179,8 +195,10 @@ void MovePlayerAspect::step(GameState & gs, float deltaT) {
 		}
 
 		// limit the players upward movement, so he can not run out of the screen at the top
-		const auto camLocation = gs.getEngines().renderEngine().getCameraLocation();
-		if ((pent->getPosition().y() > (camLocation.y() + PlayerMovement::MaxAdvance))
+		const auto camLocation =
+				gs.getEngines().renderEngine().getCameraLocation();
+		if ((pent->getPosition().y()
+				> (camLocation.y() + PlayerMovement::MaxAdvance))
 				&& (thisMovement.y() > 0.0f)) {
 			if (m_scrollEnabled && gs.getScrollActive()) {
 				thisMovement.setY(GameMovement::ScrollSpeed * deltaT * 0.8f);
@@ -194,7 +212,8 @@ void MovePlayerAspect::step(GameState & gs, float deltaT) {
 	}
 }
 
-float MovePlayerAspect::computeMovementDecay(const float maxSpeed, const float resSpeed) {
+float MovePlayerAspect::computeMovementDecay(const float maxSpeed,
+		const float resSpeed) {
 	/*const float ratio = resSpeed / maxSpeed;*/
 
 	return /*ratio * PlayerMovement::MovementDecayDynamic +*/PlayerMovement::MovementDecayStatic;
@@ -204,7 +223,8 @@ void MovePlayerAspect::playerBiking(GameState & gs, PlayerId id) {
 	m_movements[id].m_bikingInit = true;
 }
 
-void MovePlayerAspect::playerMove(GameState & gs, Vector2 const& vec, PlayerId id) {
+void MovePlayerAspect::playerMove(GameState & gs, Vector2 const& vec,
+		PlayerId id) {
 	m_movements[id].m_stepMovement = m_movements[id].m_stepMovement + vec;
 
 //m_stepMovement = m_stepMovement + vec;

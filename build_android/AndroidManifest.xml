@@ -26,6 +26,8 @@
     <!-- Android 4.1 "Jelly Bean" -->
     <uses-sdk android:minSdkVersion="16" />
 
+	<uses-permission android:name="android.permission.VIBRATE" />
+	
     <application
         android:allowBackup="true"
         android:icon="@drawable/android_icon"
