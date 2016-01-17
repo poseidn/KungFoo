@@ -14,7 +14,9 @@ Repo Type:git
 Repo:https://github.com/poseidn/KungFoo.git
 
 Build:1.0,1
-    commit=master
+    commit=release-1.0
     init= cd .. && ./distributeAssets.sh && cd build_android && ./get_externals.sh
     subdir=build_android
     buildjni=yes
+
+
