@@ -12,6 +12,20 @@
 class AndroidInput: public InputSystemBase {
 public:
 
+	struct FingerLocation {
+
+		FingerLocation(int id, float x, float y) :
+				xpos(x), ypos(y), PointerId(id) {
+
+		}
+
+		float xpos;
+		float ypos;
+		int PointerId;
+	};
+
+	typedef std::vector<FingerLocation> FingerLocationList;
+
 	void updateContainer(float deltaT) override {
 
 		// reset state of button, will be set by the inject calls below
@@ -19,8 +33,16 @@ public:
 		ipC.resetKeypress();
 	}
 
+	// Finger has touched down for the first time on the touch screen
 	void injectTouchDown(int pointer_id, float xpos, float ypos);
-	void injectTouchMove(int pointer_id, float xpos, float ypos);
+
+	// One finger moved on the touch screen. This function takes the
+	// position of all fingers, because Android does not supply the
+	// id of the finger which actually moved, but only the position of the
+	// pointer finger
+	void injectTouchMove(FingerLocationList locationList);
+
+	// Finger was lifted from the touch screen
 	void injectTouchUp(int pointer_id);
 
 	void setScreenTransform(ScreenTransform st) {

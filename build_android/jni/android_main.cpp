@@ -71,33 +71,47 @@ static int32_t engine_handle_input(struct android_app* app,
 	if (etype == AINPUT_EVENT_TYPE_MOTION) {
 		int32_t atype = AMotionEvent_getAction(event);
 		uint32_t action = atype & AMOTION_EVENT_ACTION_MASK;
+
 		int32_t finger_index = (atype & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK)
 				>> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
 		int32_t finger_id = AMotionEvent_getPointerId(event, finger_index);
 
-		float x = AMotionEvent_getX(event, finger_index);
-		float y = AMotionEvent_getY(event, finger_index);
+		float pointer_x = AMotionEvent_getX(event, finger_index);
+		float pointer_y = AMotionEvent_getY(event, finger_index);
 
 		/*LOGI(
-				"got motion event with (%f,%f) and id %i and index %i raw action %i",
-				x, y, finger_id, finger_index, action);*/
+		 "got motion event with (%f,%f) and id %i and index %i raw action %i",
+		 x, y, finger_id, finger_index, action);*/
 
 		// we accpet both the primary or secondary pointer
 		if ((action == AMOTION_EVENT_ACTION_DOWN)
 				|| (action == AMOTION_EVENT_ACTION_POINTER_DOWN)) {
 			//LOGI("AMOTION_EVENT_ACTION_DOWN");
-			udata->framework->getInputSystem()->injectTouchDown(finger_id, x,
-					y);
+			udata->framework->getInputSystem()->injectTouchDown(finger_id,
+					pointer_x, pointer_y);
 		} else if (action == AMOTION_EVENT_ACTION_MOVE) {
-			//LOGI("AMOTION_EVENT_ACTION_MOVE");
-			udata->framework->getInputSystem()->injectTouchMove(finger_id, x,
-					y);
+			LOGI("AMOTION_EVENT_ACTION_MOVE");
+
+			// always extract all finger position, because if there is more
+			// than one finger on the touch screen, in case of AMOTION_EVENT_ACTION_MOVE
+			// the finger_index will always be the index of the pointer finger (first finger
+			// which touched down) and not of the finger which actually moved
+
+			size_t pointerCount = AMotionEvent_getPointerCount(event);
+
+			AndroidInput::FingerLocationList locList;
+			for (size_t iPointer = 0; iPointer < pointerCount; iPointer++) {
+				float x = AMotionEvent_getX(event, iPointer);
+				float y = AMotionEvent_getY(event, iPointer);
+				int32_t id = AMotionEvent_getPointerId(event, iPointer);
+				locList.push_back(AndroidInput::FingerLocation(id, x, y));
+			}
+
+			udata->framework->getInputSystem()->injectTouchMove(locList);
 		} else if ((action == AMOTION_EVENT_ACTION_UP)
 				|| (action == AMOTION_EVENT_ACTION_POINTER_UP)) {
 			//LOGI("AMOTION_EVENT_ACTION_UP");
 			udata->framework->getInputSystem()->injectTouchUp(finger_id);
-		} else {
-			//LOGI("AMOTION_EVENT_ not handled");
 		}
 
 		return 1;

@@ -238,7 +238,7 @@ void GameTemplates::registerTemplates(EntityEngine & entNg) {
 
 	registerUiElementEx("loading-screen", { 8.0f, 4.0f }, 1.0f, LayerPriorityTopTopMost);
 
-	registerUiElementEx("dpad1", { 6.0f, 6.0f }, 0.5f, LayerPriorityTopMost);
+	registerUiElementEx("dpad1", { 8.0f, 8.0f }, 0.5f, LayerPriorityTopMost);
 	registerUiElementEx("vbutton1", { 4.0f, 4.0f }, 0.5f, LayerPriorityTopMost);
 	registerUiElementEx("vbutton2", { 4.0f, 4.0f }, 0.5f, LayerPriorityTopMost);
 }

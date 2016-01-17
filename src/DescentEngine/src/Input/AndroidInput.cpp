@@ -27,8 +27,10 @@ void AndroidInput::computeVirtualControlsPositions() {
 
 	if (!padPositionsSet) {
 
+		const float radiusDpad = 4.0f;
+
 		// will always be in the lower left corner
-		m_posDpad = Vector2(3.0f, 3.0f);
+		m_posDpad = Vector2(radiusDpad, radiusDpad);
 		m_posButton1 = Vector2(m_screenTransform.screenSizeInTiles().x() - 3.0f,
 				6.5f);
 		m_posButton2 = Vector2(m_screenTransform.screenSizeInTiles().x() - 3.0f,
@@ -43,7 +45,7 @@ void AndroidInput::computeVirtualControlsPositions() {
 
 		// todo: read dynamically
 		m_padDpadRadiusInPixels = m_screenTransform.vectorToScreen(
-				Vector2(3.0, 3.0), false, false).x();
+				Vector2(radiusDpad, radiusDpad), false, false).x();
 
 		m_padButtonRadiusInPixels = m_screenTransform.vectorToScreen(
 				Vector2(2.0, 2.0), false, false).x();
@@ -108,10 +110,12 @@ void AndroidInput::injectTouchDown(int pointer_id, float xpos, float ypos) {
 	if (dist_button1.first) {
 		logging::Info() << "Button1 touched";
 		ipC.setKeyDownJump(true);
+		return;
 	}
 	if (dist_button2.first) {
 		logging::Info() << "Button2 touched";
 		ipC.setKeyDownKick(true);
+		return;
 	}
 
 	const auto dist_tuple = distanceToDPadCenter(xpos, ypos);
@@ -126,28 +130,37 @@ void AndroidInput::injectTouchDown(int pointer_id, float xpos, float ypos) {
 	}
 }
 
-void AndroidInput::injectTouchMove(int pointer_id, float xpos, float ypos) {
-	ypos = upsideDownY(ypos);
-
+void AndroidInput::injectTouchMove(FingerLocationList locationList) {
 	// nothing to do for us here
 	if (!PadFingerSet)
 		return;
 
-	const auto dist_tuple = distanceToDPadCenter(xpos, ypos);
+	// is this the finger we are actually tracking on the dpad ?
+	// search for the finger which touched the dpad !
+	for (auto & loc : locationList) {
+		if (PadFingerId == loc.PointerId) {
+			float xpos = loc.xpos;
+			float ypos = loc.ypos;
+			ypos = upsideDownY(ypos);
 
-	auto & ipC = this->getContainer(0);
+			const auto dist_tuple = distanceToDPadCenter(xpos, ypos);
 
-	// still allow for control, even if the finger left the dpad, but limit
-	const float relDiffX = std::min(
-			dist_tuple.second.x() * InputContainer::StickOneMax,
-			InputContainer::StickOneMax);
-	const float relDiffY = std::min(
-			dist_tuple.second.y() * InputContainer::StickOneMax,
-			InputContainer::StickOneMax);
+			auto & ipC = this->getContainer(0);
 
-	//logging::Info() << "Moved on DPad " << relDiffX << " : " << relDiffY;
+			// still allow for control, even if the finger left the dpad, but limit
+			const float relDiffX = std::min(
+					dist_tuple.second.x() * InputContainer::StickOneMax,
+					InputContainer::StickOneMax);
+			const float relDiffY = std::min(
+					dist_tuple.second.y() * InputContainer::StickOneMax,
+					InputContainer::StickOneMax);
 
-	ipC.setDirectionStickOne(Vector2(relDiffX, relDiffY));
+			logging::Info() << "REL Moved on DPad " << relDiffX << " : "
+					<< relDiffY;
+
+			ipC.setDirectionStickOne(Vector2(relDiffX, relDiffY));
+		}
+	}
 }
 
 void AndroidInput::injectTouchUp(int pointer_id) {
