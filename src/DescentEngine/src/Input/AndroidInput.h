@@ -6,7 +6,9 @@
 #include "InputSystemBase.h"
 #include "InputContainer.h"
 #include "../Visuals/ScreenTransform.h"
+#include "../EntityEngine/SingleVisualEntity.h"
 
+#include <vector>
 #include <utility>
 
 class AndroidInput: public InputSystemBase {
@@ -45,6 +47,8 @@ public:
 	// Finger was lifted from the touch screen
 	void injectTouchUp(int pointer_id);
 
+	void addVirtualControlEntity(SingleVisualEntity * vis);
+
 	void setScreenTransform(ScreenTransform st) {
 		m_screenTransform = st;
 	}
@@ -68,6 +72,9 @@ public:
 		// 4 gamepads ...
 		return 4;
 	}
+
+	virtual void showVirtualControls() override;
+	virtual void hideVirtualControls() override;
 
 	void computeVirtualControlsPositions();
 
@@ -109,4 +116,5 @@ private:
 	int PadFingerId = 0;
 
 	ScreenTransform m_screenTransform;
+	std::vector<SingleVisualEntity *> m_virtualControlsSprites;
 };

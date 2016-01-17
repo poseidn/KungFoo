@@ -4,6 +4,7 @@
 #include <cmath>
 #include <sstream>
 #include "../Log.h"
+#include "../Visuals/SpriteVisual.h"
 
 DeviceList AndroidInput::availableInputDevices() const {
 	DeviceList devList;
@@ -21,6 +22,22 @@ DeviceList AndroidInput::availableInputDevices() const {
 
 	// todo: has to be delivered by android
 	return devList;
+}
+
+void AndroidInput::addVirtualControlEntity(SingleVisualEntity * vis) {
+	m_virtualControlsSprites.push_back(vis);
+}
+
+void AndroidInput::showVirtualControls() {
+	for (auto * s : m_virtualControlsSprites) {
+		s->getVisual().get().setVisible(true);
+	}
+}
+
+void AndroidInput::hideVirtualControls() {
+	for (auto * s : m_virtualControlsSprites) {
+		s->getVisual().get().setVisible(false);
+	}
 }
 
 void AndroidInput::computeVirtualControlsPositions() {

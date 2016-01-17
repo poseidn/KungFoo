@@ -6,17 +6,20 @@
 
 void AdvanceIntroAspect::init(IntroState & thisGs) {
 
-	thisGs.slotInputNext.subscribe([&] ( IntroState & gs, InputSystem::ContainerId id )
-	{
-		logging::Info() << "going to next Intro state";
-		nextStage ( gs);
-	});
+	thisGs.slotInputNext.subscribe(
+			[&] ( IntroState & gs, InputSystem::ContainerId id )
+			{
+				logging::Info() << "going to next Intro state";
+				nextStage ( gs);
+			});
 
-	thisGs.slotActivateState.subscribe([&] ( IntroState & gs, StateChangeInfoPtr const& changeInfo )
-	{
-		logging::Info() << "setting up Intro state";
-		nextStage ( gs );
-	});
+	thisGs.slotActivateState.subscribe(
+			[&] ( IntroState & gs, StateChangeInfoPtr const& changeInfo )
+			{
+				logging::Info() << "setting up Intro state";
+				gs.getEngines().inputEngine().hideVirtualControls();
+				nextStage ( gs );
+			});
 }
 
 void AdvanceIntroAspect::nextStage(IntroState & gs) {
@@ -25,7 +28,8 @@ void AdvanceIntroAspect::nextStage(IntroState & gs) {
 
 	// remove the old stuff
 	gs.getEngines().animationEngine().clearAll();
-	gs.getEngines().entityEngine().cleanManagedList(gs.m_managedEntities, gs.getEngines());
+	gs.getEngines().entityEngine().cleanManagedList(gs.m_managedEntities,
+			gs.getEngines());
 	m_cinEngine.reset();
 	gs.m_managedEntities.clear();
 
@@ -35,11 +39,12 @@ void AdvanceIntroAspect::nextStage(IntroState & gs) {
 	auto & entEngine = gs.getEngines().entityEngine();
 	EntityFactory fact(gs.getEngines());
 
-	ScreenTransform const& trans = gs.getEngines().renderEngine().getScreenTransform();
+	ScreenTransform const& trans =
+			gs.getEngines().renderEngine().getScreenTransform();
 
 	if (gs.getStage() == 1) {
-		auto logoMarker = fact. createFromTemplateName<SingleVisualEntity>("intro_logo_maker",
-				Vector2(0.0f, 0.0f));
+		auto logoMarker = fact.createFromTemplateName<SingleVisualEntity>(
+				"intro_logo_maker", Vector2(0.0f, 0.0f));
 		VisualSupport::placeXCenter(logoMarker.get(), 0.5f, 0.60f, trans);
 
 		logoMarker->getActiveVisual().get().setTransparency(0.0f);
@@ -52,13 +57,15 @@ void AdvanceIntroAspect::nextStage(IntroState & gs) {
 
 		// auto advance after n seconds
 		m_cinEngine.addTimelineItem(
-				std::make_shared < CinematicLambda > (lmdNextStage, CinematicTimepoint(5.0)));
+				std::make_shared < CinematicLambda
+						> (lmdNextStage, CinematicTimepoint(5.0)));
 	} else if (gs.getStage() == 2) {
 
-		gs.getEngines().renderEngine().setCameraLocation(Vector3(0.0f, 0.0f, 0.0f));
+		gs.getEngines().renderEngine().setCameraLocation(
+				Vector3(0.0f, 0.0f, 0.0f));
 
-		auto logoKungfu = fact. createFromTemplateName<SingleVisualEntity>("intro_logo_kungfoo",
-				Vector2(0.0f, 0.0f));
+		auto logoKungfu = fact.createFromTemplateName<SingleVisualEntity>(
+				"intro_logo_kungfoo", Vector2(0.0f, 0.0f));
 		VisualSupport::placeXCenter(logoKungfu.get(), 0.5f, 0.60f, trans);
 		/*
 		 Entity * guyEnt = fact.create<  SingleVisualEntity>("intro_guy", Vector2(0.0f, 0.0f));
@@ -78,53 +85,69 @@ void AdvanceIntroAspect::nextStage(IntroState & gs) {
 
 		m_cinEngine.addTimelineItem(
 				std::make_shared < CinematicTransformAnimation
-						> ("logo_kungfoo", startPos, finalPos, CinematicTimespan(0, 3)));
+						> ("logo_kungfoo", startPos, finalPos, CinematicTimespan(
+								0, 3)));
 		m_cinEngine.addTimelineItem(
 				std::make_shared < CinematicTranspararencyAnimation
-						> ("logo_kungfoo", 0.0f, 0.9f, CinematicTimespan(1.01, 3)));
+						> ("logo_kungfoo", 0.0f, 0.9f, CinematicTimespan(1.01,
+								3)));
 
 		m_logoKungFooPos = finalPos;
 		entEngine.addEntity(std::move(logoKungfu), "logo_kungfoo");
 
 		// left fist
-		auto logoFistLeft = fact. createFromTemplateName<SingleVisualEntity>("intro_logo_fist_left",
-				Vector2(-10.0f, 0.0f));
-		logoFistLeft->getActiveVisual().get().setIngame(trans, Vector2(100.0, 0.0f), false);
+		auto logoFistLeft = fact.createFromTemplateName<SingleVisualEntity>(
+				"intro_logo_fist_left", Vector2(-10.0f, 0.0f));
+		logoFistLeft->getActiveVisual().get().setIngame(trans,
+				Vector2(100.0, 0.0f), false);
 
 		gs.m_managedEntities.push_back(logoFistLeft.get());
 		entEngine.addEntity(std::move(logoFistLeft), "logo_fist_left");
 		m_cinEngine.addTimelineItem(
 				std::make_shared < CinematicTransformAnimation
-						> ("logo_fist_left", Vector2(-2.0, m_logoKungFooPos.y()), Vector2(
-								m_logoKungFooPos.x() - 6.3f, m_logoKungFooPos.y()), CinematicTimespan(4.3, 4.8)));
+						> ("logo_fist_left", Vector2(-2.0,
+								m_logoKungFooPos.y()), Vector2(
+								m_logoKungFooPos.x() - 6.3f,
+								m_logoKungFooPos.y()), CinematicTimespan(4.3,
+								4.8)));
 		m_cinEngine.addTimelineItem(
 				std::make_shared < CinematicTranspararencyAnimation
-						> ("logo_fist_left", 0.0f, 1.0f, CinematicTimespan(4.301, 4.5)));
+						> ("logo_fist_left", 0.0f, 1.0f, CinematicTimespan(
+								4.301, 4.5)));
 		m_cinEngine.addTimelineItem(
-				std::make_shared < CinematicSound > ("player_kick1", CinematicTimepoint(4.75)));
+				std::make_shared < CinematicSound
+						> ("player_kick1", CinematicTimepoint(4.75)));
 
 		// rigth fist
-		auto logoFistRight = fact. createFromTemplateName<SingleVisualEntity>("intro_logo_fist_right",
-				Vector2(300.0f, 3.0f));
-		logoFistRight->getActiveVisual().get().setIngame(trans, Vector2(), false);
+		auto logoFistRight = fact.createFromTemplateName<SingleVisualEntity>(
+				"intro_logo_fist_right", Vector2(300.0f, 3.0f));
+		logoFistRight->getActiveVisual().get().setIngame(trans, Vector2(),
+				false);
 		gs.m_managedEntities.push_back(logoFistRight.get());
 		entEngine.addEntity(std::move(logoFistRight), "logo_fist_right");
 		m_cinEngine.addTimelineItem(
 				std::make_shared < CinematicTransformAnimation
-						> ("logo_fist_right", Vector2(m_logoKungFooPos.x() + 9.8f, m_logoKungFooPos.y()), Vector2(
-								m_logoKungFooPos.x() + 6.3f, m_logoKungFooPos.y()),
+						> ("logo_fist_right", Vector2(
+								m_logoKungFooPos.x() + 9.8f,
+								m_logoKungFooPos.y()), Vector2(
+								m_logoKungFooPos.x() + 6.3f,
+								m_logoKungFooPos.y()),
 						//Vector2(0.0, m_logoKungFooPos.y()), Vector2(0.0f, m_logoKungFooPos.y()),
 						CinematicTimespan(4.9, 5.4)));
 		m_cinEngine.addTimelineItem(
 				std::make_shared < CinematicTranspararencyAnimation
-						> ("logo_fist_right", 0.0f, 1.0f, CinematicTimespan(4.91, 5.1)));
+						> ("logo_fist_right", 0.0f, 1.0f, CinematicTimespan(
+								4.91, 5.1)));
 		m_cinEngine.addTimelineItem(
-				std::make_shared < CinematicSound > ("player_kick1", CinematicTimepoint(5.3)));
+				std::make_shared < CinematicSound
+						> ("player_kick1", CinematicTimepoint(5.3)));
 
 		// barracuda
-		auto logoBarPos = Vector2(m_logoKungFooPos.x() - 0.0f, m_logoKungFooPos.y() - 3.4f);
+		auto logoBarPos = Vector2(m_logoKungFooPos.x() - 0.0f,
+				m_logoKungFooPos.y() - 3.4f);
 
-		auto logoBar = fact. createFromTemplateName<SingleVisualEntity>("intro_logo_bar", logoBarPos);
+		auto logoBar = fact.createFromTemplateName<SingleVisualEntity>(
+				"intro_logo_bar", logoBarPos);
 		logoBar->getActiveVisual().get().setIngame(trans, logoBarPos, false);
 		logoBar->getActiveVisual().get().setTransparency(0.0f);
 		gs.m_managedEntities.push_back(logoBar.get());
@@ -140,11 +163,14 @@ void AdvanceIntroAspect::nextStage(IntroState & gs) {
 						> ("logo_bar", 0.0f, 1.0f, CinematicTimespan(5.79, 8.8)));
 
 		m_cinEngine.addTimelineItem(
-				std::make_shared < CinematicSound > ("player_yell1", CinematicTimepoint(8.2)));
+				std::make_shared < CinematicSound
+						> ("player_yell1", CinematicTimepoint(8.2)));
 		m_cinEngine.addTimelineItem(
-				std::make_shared < CinematicLambda > (lmdNextStage, CinematicTimepoint(12.0)));
+				std::make_shared < CinematicLambda
+						> (lmdNextStage, CinematicTimepoint(12.0)));
 	} else {
 		// intro done, move on with your life ...
+		gs.getEngines().inputEngine().showVirtualControls();
 		StateChangeInfoPtr pChange(new GameToMenuInfo());
 		gs.requestStateChange("menu", pChange);
 	}

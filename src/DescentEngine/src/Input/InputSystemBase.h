@@ -32,11 +32,11 @@ class InputSystemBase: boost::noncopyable {
 
 public:
 
-	CPP11_CONSTEXPR	static size_t MaxPlayerInput = 2;
+	CPP11_CONSTEXPR static size_t MaxPlayerInput = 2;
 
 	typedef int PlayerInputId;
-	typedef int ContainerId;
-	CPP11_CONSTEXPR static ContainerId InvalidContainerId = -1000;
+	typedef int ContainerId;CPP11_CONSTEXPR static ContainerId InvalidContainerId =
+			-1000;
 
 	InputSystemBase() {
 
@@ -66,14 +66,21 @@ public:
 
 	void assignPlayerToInput(PlayerInputId pl, ContainerId containerId) {
 		m_playerAssignment[pl] = containerId;
-		logging::Info() << "Assiging player " << pl << " to containerId" << containerId;
+		logging::Info() << "Assiging player " << pl << " to containerId"
+				<< containerId;
 	}
 
 	void dumpPlayerAssignment() const {
 		logging::Info() << "dumping player assignment";
 		for (auto pAss : m_playerAssignment) {
-			logging::Info() << "PlayerInputId" << pAss.first << " mapped to " << pAss.second;
+			logging::Info() << "PlayerInputId" << pAss.first << " mapped to "
+					<< pAss.second;
 		}
+	}
+
+	virtual void showVirtualControls() {
+	}
+	virtual void hideVirtualControls() {
 	}
 
 	// convinience functions which condenses multiple input containers
@@ -151,7 +158,8 @@ protected:
 	ContainerId getPlayerAssignment(PlayerInputId pl) const {
 		auto const& assignment = m_playerAssignment.find(pl);
 		if (assignment == m_playerAssignment.end()) {
-			logging::Fatal() << "reqesting input container for non-assigned player";
+			logging::Fatal()
+					<< "reqesting input container for non-assigned player";
 		}
 		return assignment->second;
 	}

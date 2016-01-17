@@ -430,14 +430,17 @@ private:
 
 		auto dpadEnt = fact.createFromTemplateName<SingleVisualEntity>("dpad1", posDpad);
 		dpadEnt->getActiveVisual().get().setIngame(m_re.getScreenTransform(), posDpad, false);
+		m_input->addVirtualControlEntity(dpadEnt.get());
 		m_ee.addEntity(std::move(dpadEnt));
 
 		auto button1 = fact.createFromTemplateName<SingleVisualEntity>("vbutton1", posButton1);
 		button1->getActiveVisual().get().setIngame(m_re.getScreenTransform(), posButton1, false);
+		m_input->addVirtualControlEntity(button1.get());
 		m_ee.addEntity(std::move(button1));
 
 		auto button2 = fact.createFromTemplateName<SingleVisualEntity>("vbutton2", posButton2);
 		button2->getActiveVisual().get().setIngame(m_re.getScreenTransform(), posButton2, false);
+		m_input->addVirtualControlEntity(button2.get());
 		m_ee.addEntity(std::move(button2));
 
 		// this also means, that we will not show any of the default control selections
