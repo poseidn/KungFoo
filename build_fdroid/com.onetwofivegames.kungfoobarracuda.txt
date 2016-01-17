@@ -18,5 +18,3 @@ Build:1.0,1
     init= cd .. && ./distributeAssets.sh && cd build_android && ./get_externals.sh
     subdir=build_android
     buildjni=yes
-
-

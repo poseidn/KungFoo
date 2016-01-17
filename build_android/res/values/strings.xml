@@ -23,7 +23,7 @@
 
 <resources>
     <!-- Simple strings. -->
-    <string name="descent_activity">Kung Foo Barracuda</string>
+    <string name="kungfoobarracuda_activity">Kung Foo Barracuda</string>
 
 </resources>
 

@@ -32,8 +32,6 @@
 #include <chrono>
 namespace chr = std::chrono;
 
-//#include <DescentEngine/src/JavaInterface.h>
-
 /*
 
  Important: The JavaInterface must be updated each time a call into the C++ framework happens via

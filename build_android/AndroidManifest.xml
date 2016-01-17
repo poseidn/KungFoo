@@ -19,7 +19,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.fast.descent"
+    package="com.onetwofivegames.kungfoobarracuda"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -31,31 +31,22 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/android_icon"
-        android:label="@string/descent_activity"
+        android:label="@string/kungfoobarracuda_activity"
         android:hasCode="true">
 
         <!-- android:screenOrientation="landscape" -->
 
-        <activity android:name="DescentNativeActivity"
+        <activity android:name="KungFooBarracudaNativeActivity"
                   android:label="Kung Foo Barracuda"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:configChanges="orientation|keyboardHidden"
                   android:screenOrientation="landscape">
             <!-- Tell NativeActivity the name of or .so -->
             <meta-data android:name="android.app.lib_name"
-                       android:value="FastDescentNativeActivity" />
-            <!--
-            default android intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                
-            </intent-filter
-            -->
+                       android:value="KungFooBarracudaNativeActivity" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-                <!-- category android:name="tv.ouya.intent.category.GAME" / -->
             </intent-filter>
         </activity>
     </application>

@@ -176,7 +176,7 @@ include $(BUILD_STATIC_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_C_INCLUDES := $(ADD_INCLUDES)
-LOCAL_MODULE    := FastDescentNativeActivity
+LOCAL_MODULE    := KungFooBarracudaNativeActivity
 LOCAL_CPPFLAGS := $(DESCENT_CPP_FLAGS)
 LOCAL_SRC_FILES := android_main.cpp
 LOCAL_LDLIBS    := -llog -landroid -lGLESv1_CM

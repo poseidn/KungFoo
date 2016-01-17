@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class DescentNativeActivity extends NativeActivity {
+public class KungFooBarracudaNativeActivity extends NativeActivity {
 	public void someCall() {
 		JavaLog.info("DescentNativeActivity", "someCall called");
 	}
