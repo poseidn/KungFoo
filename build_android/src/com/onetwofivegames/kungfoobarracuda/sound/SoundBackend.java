@@ -1,12 +1,12 @@
-package com.fast.descent.sound;
+package com.onetwofivegames.kungfoobarracuda.sound;
 
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 
-import com.fast.descent.JavaLog;
-import com.fast.descent.exceptions.ResourceNotFound;
+import com.onetwofivegames.kungfoobarracuda.JavaLog;
+import com.onetwofivegames.kungfoobarracuda.exceptions.ResourceNotFound;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.fast.descent;
+package com.onetwofivegames.kungfoobarracuda;
 
 import android.util.Log;
 

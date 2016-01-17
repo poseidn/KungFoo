@@ -1,4 +1,4 @@
-package com.fast.descent.exceptions;
+package com.onetwofivegames.kungfoobarracuda.exceptions;
 
 public class DescentExceptionBase extends Exception {
 

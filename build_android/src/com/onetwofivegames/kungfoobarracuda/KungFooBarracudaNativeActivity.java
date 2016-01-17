@@ -1,4 +1,4 @@
-package com.fast.descent;
+package com.onetwofivegames.kungfoobarracuda;
 
 import android.app.NativeActivity;
 
@@ -9,9 +9,9 @@ import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.os.Vibrator;
 
-import com.fast.descent.resources.FileBackend;
-import com.fast.descent.sound.SoundBackend;
-import com.fast.descent.exceptions.ResourceNotFound;
+import com.onetwofivegames.kungfoobarracuda.resources.FileBackend;
+import com.onetwofivegames.kungfoobarracuda.sound.SoundBackend;
+import com.onetwofivegames.kungfoobarracuda.exceptions.ResourceNotFound;
 
 import java.io.BufferedReader;
 import java.io.IOException;

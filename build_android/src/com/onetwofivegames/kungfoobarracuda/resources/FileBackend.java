@@ -1,4 +1,4 @@
-package com.fast.descent.resources;
+package com.onetwofivegames.kungfoobarracuda.resources;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
-import com.fast.descent.JavaLog;
+import com.onetwofivegames.kungfoobarracuda.JavaLog;
 
 import java.io.BufferedReader;
 import java.io.IOException;
