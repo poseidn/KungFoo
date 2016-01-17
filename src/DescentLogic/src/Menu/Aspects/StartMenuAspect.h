@@ -20,8 +20,9 @@ public:
 
 	virtual void init(MenuState & gs) CPP11_OVERRIDE;
 
-	TextVisual * m_gameOverVisual;
-	TextVisual * m_scoreVisual;
+	TextVisual * m_gameOverVisual = nullptr;
+	TextVisual * m_scoreVisual = nullptr;
+	TextVisual * m_twitterUser = nullptr;
 	Entity * m_logoEntity;
 	Entity * m_controlsEntity;
 

@@ -68,12 +68,21 @@ void StartMenuAspect::init(MenuState & gs) {
 
 					EntityFactory fact(gs.getEngines());
 					auto logoEntity = fact. createFromTemplateName<SingleVisualEntity>("game_logo",
-							Vector2(1.0f, 1.0f));
+							Vector2(1.0f, 0.0f));
 					m_logoEntity = logoEntity.get();
 					m_logoEntity->getActiveVisual().get().setIngame(trans, Vector2(0.0f, 5.0f), false);
-					VisualSupport::placeXCenter( m_logoEntity, 0.5f, 0.75f, trans );
+					VisualSupport::placeXCenter( m_logoEntity, 0.5f, 0.85f, trans );
 					gs.getEngines().entityEngine().addEntity(std::move(logoEntity),
 							&gs.getManagedEntityList());
+
+					Vector2 twitterPos(4.5f, 8.8f);
+					TexturePtr textTex = gs.getEngines().resourceEngine().loadImage("textChars");
+					auto twitterUser = std14::make_unique< TextVisual>(trans, textTex,
+							twitterPos,"@onetwofivegames");
+					m_twitterUser = twitterUser.get();
+					//m_scoreVisual = scoreVisual.get();
+					gs.getEngines().renderEngine().addTextVisual(std::move(twitterUser));
+
 					/*
 					 m_controlsEntity = fact.create<  SingleVisualEntity>("xbox-gamepad-labels", Vector2(13.0f, 7.0f));
 					 gs.getEngines().entityEngine().addEntity( m_controlsEntity, &gs.getManagedEntityList());*/
@@ -218,6 +227,11 @@ void StartMenuAspect::init(MenuState & gs) {
 			if (m_scoreVisual) {
 				gs.getEngines().renderEngine().removeTextVisual(m_scoreVisual);
 				m_scoreVisual = nullptr;
+			}
+
+			if ( m_twitterUser) {
+				gs.getEngines().renderEngine().removeTextVisual(m_twitterUser);
+				m_twitterUser = nullptr;
 			}
 
 		});
