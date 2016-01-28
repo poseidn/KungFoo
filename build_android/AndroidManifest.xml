@@ -20,8 +20,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.onetwofivegames.kungfoobarracuda"
-    android:versionCode="2"
-    android:versionName="1.1" >
+    android:versionCode="3"
+    android:versionName="1.2" >
 
     <!-- Android 4.1 "Jelly Bean" -->
     <uses-sdk android:minSdkVersion="16" />
