@@ -95,7 +95,7 @@ void StartMenuAspect::init(MenuState & gs) {
 					gs.getEngines().entityEngine().addEntity(std::move(logoEntity),
 							&gs.getManagedEntityList());
 
-					Vector2 twitterPos(4.5f, 8.8f);
+					Vector2 twitterPos(4.5f, 0.1f);
 					TexturePtr textTex = gs.getEngines().resourceEngine().loadImage("textChars");
 					auto twitterUser = std14::make_unique< TextVisual>(trans, textTex,
 							twitterPos,"@onetwofivegames");
