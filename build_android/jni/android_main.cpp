@@ -177,16 +177,22 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 		udata->framework->pauseGame();
 		break;
 
+		// note: in the case of clicking the "Recent Apps" button
+		// CMD_STOP is called before TERM_WINDOW, therefore this
+		// case cannot be relibaly used, because the whole
+		// framework might already be freed. Check this here
 	case APP_CMD_TERM_WINDOW:
 		LOGI("APP_CMD_TERM_WINDOW");
 
 		udata->is_ready.store(false);
 
-		// free all Open GL resources, once this has the called,
-		// the surface cannot be re-used
-		udata->framework->freeAllTextures();
-		udata->framework->releaseRenderEngine();
-
+		// does the framework object still exist ?
+		if (udata->framework) {
+			// free all Open GL resources, once this has the called,
+			// the surface cannot be re-used
+			udata->framework->freeAllTextures();
+			udata->framework->releaseRenderEngine();
+		}
 		break;
 	case APP_CMD_STOP:
 		LOGI("APP_CMD_STOP");
@@ -195,6 +201,8 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 		// destroy all game state
 		// game will start from scratch next time
+		// this will destroy the framework object via
+		// the smart pointer
 		udata->framework.release();
 
 		break;
