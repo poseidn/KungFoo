@@ -53,6 +53,7 @@ private:
 };
 
 #ifdef USE_SDL
+#include <cmath>
 #include "SDL_include.h"
 
 class SDLTiming: public TimingBase
@@ -68,7 +69,7 @@ public:
 	{
 		// with take ms
 		float waitMS = waitSeconds * 1000.0f;
-		SDL_Delay( round( waitMS));
+		SDL_Delay( std::round( waitMS));
 	}
 
 };
